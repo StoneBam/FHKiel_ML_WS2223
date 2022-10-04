@@ -28,7 +28,7 @@ class LinearRegression():
         slope: float = max_y_value / max_x_value
         return slope
 
-    def guess_initial_stepw(self, initial_slope: float, fraction: float = 0.01) -> float:
+    def guess_initial_stepw(self, initial_slope: float, fraction: float = 0.1) -> float:
         if fraction > 1:
             return initial_slope
         elif fraction < 0:
@@ -79,6 +79,7 @@ class LinearRegression():
         # Get error stats
         diff, frac = self.comp_errors()
         self._curr_stepw = self.calc_next_stepw(self._curr_stepw, diff)
+        print(f'Slope: {self._curr_slope}, Stepwidth: {self._curr_stepw},  Error: {self._curr_error}, diff: {diff}, frac: {frac}')
 
         # Render output
         self.render_diagram(self._curr_slope)
@@ -104,8 +105,11 @@ class LinearRegression():
         m_values: np.ndarray = np.array([])
         q_values: np.ndarray = np.array([])
         for m_val, q_val in self._slope_errors:
-            np.append(m_values, m_val)
-            np.append(q_values, q_val)
+            m_values = np.append(m_values, m_val)
+            q_values = np.append(q_values, q_val)
+        perm = m_values.argsort()
+        m_values = m_values[perm]
+        q_values = q_values[perm]
 
         sub_2 = plt.subplot(122)
         sub_2.plot(m_values, q_values, 'b.-')
