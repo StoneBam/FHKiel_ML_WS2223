@@ -62,8 +62,8 @@ class LinearRegression():
 
         # Modulo to show only every x steps
         if stepping is not None:
-            if self._iterations % stepping == 0:
-                input('Press any key for next iteration.')
+            if self._iterations % stepping == 0 and self._iterations > 0:
+                input(f'Press any key for next iteration ({self._iterations + 1}).')
         self._iterations += 1
 
         # Modify slope with stepwidth
@@ -100,6 +100,7 @@ class LinearRegression():
         sub_1 = plt.subplot(121)
         sub_1.plot(x_value, y_data, 'r+', x_value, y_reg, 'g-')
         sub_1.grid(True)
+        sub_1.set_title(f'Regression (Iteration = {self._iterations})')
         self._plot.add_subplot(sub_1)
 
         m_values: np.ndarray = np.array([])
@@ -114,6 +115,16 @@ class LinearRegression():
         sub_2 = plt.subplot(122)
         sub_2.plot(m_values, q_values, 'b.-')
         sub_2.grid(True)
+        sub_2.set_title('Q-Error vs. Slope')
+        sub_2.set_ylabel('Q-Error')
+        sub_2.set_xlabel('Slope')
+        sub_2.text(
+            0.05,
+            0.95,
+            f'm = {round(self._curr_slope, 2)}\nF = {round(self._curr_error, 2)}',
+            horizontalalignment='left',
+            verticalalignment='center',
+            transform=sub_2.transAxes)
         self._plot.add_subplot(sub_2)
 
         self._plot.show()
@@ -181,3 +192,4 @@ if __name__ == "__main__":
     random_sample = generate_random_data(function=lambda x: x)
     linreg = LinearRegression(random_sample)
     linreg.recursive_approx(stepping=1)
+    input('Press any key to end program.')
