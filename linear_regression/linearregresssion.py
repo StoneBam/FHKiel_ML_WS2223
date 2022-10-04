@@ -1,3 +1,4 @@
+import random
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -149,5 +150,28 @@ class TestLinearRegression:
         assert render is None
 
 
+def generate_random_data(
+        seed: str = None,
+        n_datapoints: int = 100,
+        lower_bound: int = 0,
+        upper_bound: int = 100,
+        function: callable = None
+        ) -> list:
+
+    rng = random.Random(seed)
+    if function is not None:
+        stepsize = (upper_bound - lower_bound) // n_datapoints
+        return [function(x) + (function(x) * rng.random() - 0.5) for x in range(lower_bound, upper_bound, stepsize)]
+    else:
+        return rng.sample(range(lower_bound, upper_bound), n_datapoints)
+
+
+def test_generate_random_data() -> None:
+    a, b, c, d = generate_random_data('test', 4, -10, 10, lambda x: x)
+    assert [round(a, 2), round(b, 2), round(c, 2), round(d, 2)] == [-17.06, -9.17, -0.5, 8.3]
+
+
 if __name__ == "__main__":
-    pass
+    random_sample = generate_random_data(function=lambda x: x)
+    linreg = LinearRegression(random_sample)
+    linreg.recursive_approx(stepping=1)
