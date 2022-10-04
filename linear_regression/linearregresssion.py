@@ -1,3 +1,7 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+
 class LinearRegression():
 
     def __init__(self, data: list, initial_slope: float = None, initial_stepw: float = None) -> None:
@@ -8,10 +12,14 @@ class LinearRegression():
         self._init_stepw: float = self.guess_initial_stepw(self._init_slope) if initial_stepw is None else initial_stepw
         self._curr_stepw: float = self._init_stepw
 
+        self._slope_errors: list = []
+
         self._last_error: float = None
         self._curr_error: float = self.calc_current_error(self._curr_slope)
 
         self._iterations: int = 0
+
+        self._plot = plt.figure("Linear Regression")
 
     def guess_initial_slope(self, data: list = None) -> float:
         max_y_value = max(self._data if data is None else data)
@@ -47,6 +55,11 @@ class LinearRegression():
         return (diff, frac)
 
     def recursive_approx(self, stepping: int = None) -> tuple[float, float, float]:
+        # Clear slope-error list on first run
+        if self._iterations == 0:
+            self._slope_errors.clear()
+
+        # Modulo to show only every x steps
         if stepping is not None:
             if self._iterations % stepping == 0:
                 input('Press any key for next iteration.')
@@ -59,9 +72,15 @@ class LinearRegression():
         self._last_error = self._curr_error
         self._curr_error = self.calc_current_error(self._curr_slope)
 
+        # Add slope-error pair to list
+        self._slope_errors.append((self._curr_slope, self._curr_error))
+
         # Get error stats
         diff, frac = self.comp_errors()
         self._curr_stepw = self.calc_next_stepw(self._curr_stepw, diff)
+
+        # Render output
+        self.render_diagram(self._curr_slope)
 
         if 1.01 > frac > 0.99:
             iters = self._iterations
@@ -69,6 +88,29 @@ class LinearRegression():
             return (self._curr_slope, self._curr_error, iters)
         else:
             return self.recursive_approx(stepping)
+
+    def render_diagram(self, slope: float) -> None:
+        x_value: np.ndarray = np.array(range(len(self._data)))
+        y_data: np.ndarray = np.array(self._data)
+        y_reg: np.ndarray = np.array([x * slope for x in x_value])
+        sub_1 = plt.subplot(121)
+        sub_1.plot(x_value, y_data, 'r+', x_value, y_reg, 'g-')
+        sub_1.grid(True)
+        self._plot.add_subplot(sub_1)
+
+        m_values: np.ndarray = np.array([])
+        q_values: np.ndarray = np.array([])
+        for m_val, q_val in self._slope_errors:
+            np.append(m_values, m_val)
+            np.append(q_values, q_val)
+
+        sub_2 = plt.subplot(122)
+        sub_2.plot(m_values, q_values, 'b.-')
+        sub_2.grid(True)
+        self._plot.add_subplot(sub_2)
+
+        self._plot.show()
+        return None
 
 
 class TestLinearRegression:
@@ -100,6 +142,11 @@ class TestLinearRegression:
         linreg: LinearRegression = LinearRegression(self.data_rng)
         slope, error, iters = linreg.recursive_approx()
         assert (round(slope, 2), round(error, 2), round(iters, 2)) == (1.02, 99.66, 2)
+
+    def test_render_diagram(self) -> None:
+        linreg: LinearRegression = LinearRegression(self.data_rng)
+        render = linreg.render_diagram(2.0)
+        assert render is None
 
 
 if __name__ == "__main__":
