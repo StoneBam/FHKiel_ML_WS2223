@@ -91,6 +91,8 @@ class LinearRegression():
             return self.recursive_approx(stepping)
 
     def render_diagram(self, slope: float) -> None:
+        self._plot.clf()
+
         x_value: np.ndarray = np.array(range(len(self._data)))
         y_data: np.ndarray = np.array(self._data)
         y_reg: np.ndarray = np.array([x * slope for x in x_value])
