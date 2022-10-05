@@ -60,12 +60,6 @@ class LinearRegression():
         if self._iterations == 0:
             self._slope_errors.clear()
 
-        # Modulo to show only every x steps
-        if stepping is not None:
-            if self._iterations % stepping == 0 and self._iterations > 0:
-                input(f'Press any key for next iteration ({self._iterations + 1}).')
-        self._iterations += 1
-
         # Modify slope with stepwidth
         self._curr_slope += self._curr_stepw
 
@@ -81,10 +75,15 @@ class LinearRegression():
         self._curr_stepw = self.calc_next_stepw(self._curr_stepw, diff)
         print(f'Slope: {self._curr_slope}, Stepwidth: {self._curr_stepw},  Error: {self._curr_error}, diff: {diff}, frac: {frac}')
 
-        # Render output
-        self.render_diagram(self._curr_slope)
+        # Modulo to show only every x steps
+        if stepping is not None and stepping > 0:
+            if self._iterations % stepping == 0 and self._iterations > 0:
+                self.render_diagram(self._curr_slope)
+                input(f'Press any key for next iteration ({self._iterations + 1}).')
+        self._iterations += 1
 
         if 1.01 > frac > 0.99:
+            self.render_diagram(self._curr_slope)
             iters = self._iterations
             self._iterations = 0
             return (self._curr_slope, self._curr_error, iters)
@@ -172,13 +171,14 @@ def generate_random_data(
         n_datapoints: int = 100,
         lower_bound: int = 0,
         upper_bound: int = 100,
-        function: callable = None
+        function: callable = None,
+        noise: int = 0
         ) -> list:
 
     rng = random.Random(seed)
     if function is not None:
         stepsize = (upper_bound - lower_bound) // n_datapoints
-        return [function(x) + (function(x) * rng.random() - 0.5) for x in range(lower_bound, upper_bound, stepsize)]
+        return [function(x) + (function(x) * 0 + noise * (rng.random() - 0.5)) for x in range(lower_bound, upper_bound, stepsize)]
     else:
         return rng.sample(range(lower_bound, upper_bound), n_datapoints)
 
@@ -189,7 +189,7 @@ def test_generate_random_data() -> None:
 
 
 if __name__ == "__main__":
-    random_sample = generate_random_data(function=lambda x: x)
+    random_sample = generate_random_data(function=lambda x: 1 * x, noise=50)
     linreg = LinearRegression(random_sample)
-    linreg.recursive_approx(stepping=1)
+    linreg.recursive_approx(stepping=0)
     input('Press any key to end program.')
