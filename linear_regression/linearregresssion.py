@@ -18,6 +18,8 @@ class LinearRegression():
         self._last_error: float = None
         self._curr_error: float = self.calc_current_error(self._curr_slope)
 
+        self._last_frac: float = 0
+
         self._iterations: int = 0
 
         self._plot = plt.figure("Linear Regression")
@@ -82,12 +84,13 @@ class LinearRegression():
                 input(f'Press any key for next iteration ({self._iterations + 1}).')
         self._iterations += 1
 
-        if 1.01 > frac > 0.99:
+        if 1.01 > frac > 0.99 and 1.01 > self._last_frac > 0.99:
             self.render_diagram(self._curr_slope)
             iters = self._iterations
             self._iterations = 0
             return (self._curr_slope, self._curr_error, iters)
         else:
+            self._last_frac = frac
             return self.recursive_approx(stepping)
 
     def render_diagram(self, slope: float) -> None:
