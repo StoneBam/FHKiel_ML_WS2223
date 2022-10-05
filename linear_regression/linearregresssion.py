@@ -141,7 +141,7 @@ class TestLinearRegression:
 
     def test_guess_initial_stepw(self) -> None:
         linreg: LinearRegression = LinearRegression(self.data)
-        assert round(linreg.guess_initial_stepw(1.0), 2) == 0.01
+        assert round(linreg.guess_initial_stepw(1.0), 2) == 0.1
 
     def test_calc_current_error(self) -> None:
         linreg: LinearRegression = LinearRegression(self.data)
@@ -158,7 +158,7 @@ class TestLinearRegression:
     def test_recursive_approx(self) -> None:
         linreg: LinearRegression = LinearRegression(self.data_rng)
         slope, error, iters = linreg.recursive_approx()
-        assert (round(slope, 2), round(error, 2), round(iters, 2)) == (1.02, 99.66, 2)
+        assert (round(slope, 2), round(error, 2), round(iters, 2)) == (1.02, 91.51, 19)
 
     def test_render_diagram(self) -> None:
         linreg: LinearRegression = LinearRegression(self.data_rng)
@@ -185,11 +185,11 @@ def generate_random_data(
 
 def test_generate_random_data() -> None:
     a, b, c, d = generate_random_data('test', 4, -10, 10, lambda x: x)
-    assert [round(a, 2), round(b, 2), round(c, 2), round(d, 2)] == [-17.06, -9.17, -0.5, 8.3]
+    assert [round(a, 2), round(b, 2), round(c, 2), round(d, 2)] == [-10.0, -5.0, 0.0, 5.0]
 
 
 if __name__ == "__main__":
-    random_sample = generate_random_data(function=lambda x: 1 * x, noise=50)
+    random_sample = generate_random_data(n_datapoints=250, upper_bound=500, function=lambda x: 1 * x, noise=50)
     linreg = LinearRegression(random_sample)
-    linreg.recursive_approx(stepping=0)
+    linreg.recursive_approx(stepping=1)
     input('Press any key to end program.')
