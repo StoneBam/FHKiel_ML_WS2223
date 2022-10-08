@@ -306,8 +306,7 @@ def generate_random_data(
     """
     rng = random.Random(seed)
     if function is not None:
-        stepsize = (upper_bound - lower_bound) // n_datapoints
-        return [function(x) + (function(x) * 0 + noise * (rng.random() - 0.5)) for x in range(lower_bound, upper_bound, stepsize)]
+        return [function(x) + (function(x) * 0 + noise * (rng.random() - 0.5)) for x in range(lower_bound, upper_bound)]
     else:
         return rng.sample(range(lower_bound, upper_bound), n_datapoints)
 
