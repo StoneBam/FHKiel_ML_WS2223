@@ -79,10 +79,11 @@ class LinearRegression():
         print(f'Slope: {self._curr_slope}, Stepwidth: {self._curr_stepw},  Error: {self._curr_error}, diff: {diff}, frac: {frac}')
 
         # Modulo to show only every x steps
-        if stepping is not None and stepping > 0:
-            if self._iterations % stepping == 0 and self._iterations > 0:
-                self.render_diagram(self._curr_slope)
-                input(f'Press any key for next iteration ({self._iterations + 1}).')
+        if stepping is not None and isinstance(stepping, int | float):
+            if stepping > 0:
+                if self._iterations % stepping == 0 and self._iterations > 0:
+                    self.render_diagram(self._curr_slope)
+                    input(f'Press any key for next iteration ({self._iterations + 1}).')
         self._iterations += 1
 
         if 1.01 > frac > 0.99 and 1.01 > self._last_frac > 0.99:
