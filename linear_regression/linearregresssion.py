@@ -1,11 +1,13 @@
 import random
+from typing import Callable
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 
 class LinearRegression():
 
-    def __init__(self, data: list, initial_slope: float = None, initial_stepw: float = None) -> None:
+    def __init__(self, data: list, initial_slope: float | None = None, initial_stepw: float | None = None) -> None:
         self._data: list = data
 
         self._init_slope: float = self.guess_initial_slope() if initial_slope is None else initial_slope
@@ -14,19 +16,17 @@ class LinearRegression():
         self._curr_stepw: float = self._init_stepw
 
         self._slope_errors: list = []
-
-        self._last_error: float = None
+        self._last_error: float = float()
         self._curr_error: float = self.calc_current_error(self._curr_slope)
 
         self._last_frac: float = 0
-
         self._iterations: int = 0
 
         self._plot = plt.figure("Linear Regression")
 
-    def guess_initial_slope(self, data: list = None) -> float:
-        max_y_value = max(self._data if data is None else data)
-        max_x_value = len(self._data if data is None else data)
+    def guess_initial_slope(self, data: list | None = None) -> float:
+        max_y_value: int | float = max(self._data if data is None else data)
+        max_x_value: int = len(self._data if data is None else data)
         slope: float = max_y_value / max_x_value
         return slope
 
@@ -38,8 +38,9 @@ class LinearRegression():
         else:
             return initial_slope * fraction
 
-    def calc_current_error(self, current_slope: float, data: list = None) -> float:
-        error = 0.0
+    def calc_current_error(self, current_slope: float, data: list | None = None) -> float:
+        error: float = 0.0
+        y_val: int | float
         for x_val, y_val in enumerate(self._data if data is None else data):
             error += (y_val - x_val * current_slope)**2
         return error
@@ -50,14 +51,14 @@ class LinearRegression():
         else:
             return old_stepw
 
-    def comp_errors(self, last_error: float = None, curr_error: float = None) -> tuple[float, float]:
-        last_error = self._last_error if last_error is None else last_error
-        curr_error = self._curr_error if curr_error is None else curr_error
-        diff: float = last_error - curr_error
-        frac: float = curr_error / last_error
+    def comp_errors(self, last_error: float | None = None, curr_error: float | None = None) -> tuple[float, float]:
+        _last_error: float = self._last_error if last_error is None else last_error
+        _curr_error: float = self._curr_error if curr_error is None else curr_error
+        diff: float = _last_error - _curr_error
+        frac: float = _curr_error / _last_error
         return (diff, frac)
 
-    def recursive_approx(self, stepping: int = None) -> tuple[float, float, float]:
+    def recursive_approx(self, stepping: int | None = None) -> tuple[float, float, float]:
         # Clear slope-error list on first run
         if self._iterations == 0:
             self._slope_errors.clear()
@@ -86,7 +87,7 @@ class LinearRegression():
 
         if 1.01 > frac > 0.99 and 1.01 > self._last_frac > 0.99:
             self.render_diagram(self._curr_slope)
-            iters = self._iterations
+            iters: int = self._iterations
             self._iterations = 0
             return (self._curr_slope, self._curr_error, iters)
         else:
@@ -170,11 +171,11 @@ class TestLinearRegression:
 
 
 def generate_random_data(
-        seed: str = None,
+        seed: str | None = None,
         n_datapoints: int = 100,
         lower_bound: int = 0,
         upper_bound: int = 100,
-        function: callable = None,
+        function: Callable | None = None,
         noise: int = 0
         ) -> list:
 
