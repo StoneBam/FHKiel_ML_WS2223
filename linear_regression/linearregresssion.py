@@ -58,7 +58,10 @@ class LinearRegression():
         frac: float = _curr_error / _last_error
         return (diff, frac)
 
-    def recursive_approx(self, stepping: int | None = None) -> tuple[float, float, float]:
+    def recursive_approx(self, stepping: int | None = None, break_margin: float = 0.01) -> tuple[float, float, float]:
+        _upper_margin: float = 1.0 + break_margin
+        _lower_margin: float = 1.0 - break_margin
+
         # Clear slope-error list on first run
         if self._iterations == 0:
             self._slope_errors.clear()
@@ -86,7 +89,8 @@ class LinearRegression():
                     input(f'Press any key for next iteration ({self._iterations + 1}).')
         self._iterations += 1
 
-        if 1.01 > frac > 0.99 and 1.01 > self._last_frac > 0.99:
+        # Breaking condition
+        if _upper_margin > frac > _lower_margin and _upper_margin > self._last_frac > _lower_margin:
             self.render_diagram(self._curr_slope)
             iters: int = self._iterations
             self._iterations = 0
