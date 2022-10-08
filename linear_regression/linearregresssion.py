@@ -7,15 +7,15 @@ import numpy as np
 
 class LinearRegression():
 
-    def __init__(self, data: list, initial_slope: float | None = None, initial_stepw: float | None = None) -> None:
-        self._data: list = data
+    def __init__(self, data: list[float | int], initial_slope: float | None = None, initial_stepw: float | None = None) -> None:
+        self._data: list[float | int] = data
 
         self._init_slope: float = self.guess_initial_slope() if initial_slope is None else initial_slope
         self._curr_slope: float = self._init_slope
         self._init_stepw: float = self.guess_initial_stepw(self._init_slope) if initial_stepw is None else initial_stepw
         self._curr_stepw: float = self._init_stepw
 
-        self._slope_errors: list = []
+        self._slope_errors: list[tuple[float, float]] = []
         self._last_error: float = float()
         self._curr_error: float = self.calc_current_error(self._curr_slope)
 
@@ -24,7 +24,7 @@ class LinearRegression():
 
         self._plot = plt.figure("Linear Regression")
 
-    def guess_initial_slope(self, data: list | None = None) -> float:
+    def guess_initial_slope(self, data: list[float | int] | None = None) -> float:
         max_y_value: int | float = max(self._data if data is None else data)
         max_x_value: int = len(self._data if data is None else data)
         slope: float = max_y_value / max_x_value
@@ -38,7 +38,7 @@ class LinearRegression():
         else:
             return initial_slope * fraction
 
-    def calc_current_error(self, current_slope: float, data: list | None = None) -> float:
+    def calc_current_error(self, current_slope: float, data: list[float | int] | None = None) -> float:
         error: float = 0.0
         y_val: int | float
         for x_val, y_val in enumerate(self._data if data is None else data):
@@ -141,8 +141,8 @@ class LinearRegression():
 
 class TestLinearRegression:
 
-    data = [x for x in range(100)]
-    data_rng = [x + x % 3 for x in range(100)]
+    data: list[float | int] = [x for x in range(100)]
+    data_rng: list[float | int] = [x + x % 3 for x in range(100)]
 
     def test_guess_initial_slope(self) -> None:
         linreg: LinearRegression = LinearRegression(self.data)
