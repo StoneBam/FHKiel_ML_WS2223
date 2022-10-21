@@ -69,7 +69,7 @@ class Point:
     def distance_manhattan(self, other: Self) -> float:
         ret = 0.0
         for coord in (other - self):
-            ret += coord
+            ret += abs(coord)
         return ret
 
 
