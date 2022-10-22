@@ -28,33 +28,33 @@ class Point:
 
     def __and__(self, other: Self | int | float) -> Self:
         return Point(
-            x=self.x & other.x if isinstance(other, type(self)) else other,
-            y=self.y & other.y if isinstance(other, type(self)) else other,
-            z=self.z & other.z if isinstance(other, type(self)) else other)
+            x=self.x & other.x if isinstance(other, type(self)) else self.x & other,
+            y=self.y & other.y if isinstance(other, type(self)) else self.y & other,
+            z=self.z & other.z if isinstance(other, type(self)) else self.z & other)
 
     def __or__(self, other: Self | int | float) -> Self:
         return Point(
-            x=self.x | other.x if isinstance(other, type(self)) else other,
-            y=self.y | other.y if isinstance(other, type(self)) else other,
-            z=self.z | other.z if isinstance(other, type(self)) else other)
+            x=self.x | other.x if isinstance(other, type(self)) else self.x | other,
+            y=self.y | other.y if isinstance(other, type(self)) else self.y | other,
+            z=self.z | other.z if isinstance(other, type(self)) else self.z | other)
 
     def __xor__(self, other: Self | int | float) -> Self:
         return Point(
-            x=self.x ^ other.x if isinstance(other, type(self)) else other,
-            y=self.y ^ other.y if isinstance(other, type(self)) else other,
-            z=self.z ^ other.z if isinstance(other, type(self)) else other)
+            x=self.x ^ other.x if isinstance(other, type(self)) else self.x ^ other,
+            y=self.y ^ other.y if isinstance(other, type(self)) else self.x ^ other,
+            z=self.z ^ other.z if isinstance(other, type(self)) else self.x ^ other)
 
     def __mul__(self, other: Self | int | float) -> Self:
         return Point(
-            x=self.x * other.x if isinstance(other, type(self)) else other,
-            y=self.y * other.y if isinstance(other, type(self)) else other,
-            z=self.z * other.z if isinstance(other, type(self)) else other)
+            x=self.x * other.x if isinstance(other, type(self)) else self.x * other,
+            y=self.y * other.y if isinstance(other, type(self)) else self.x * other,
+            z=self.z * other.z if isinstance(other, type(self)) else self.x * other)
 
     def __pow__(self, other: Self | int | float) -> Self:
         return Point(
-            x=self.x ** other.x if isinstance(other, type(self)) else other,
-            y=self.y ** other.y if isinstance(other, type(self)) else other,
-            z=self.z ** other.z if isinstance(other, type(self)) else other)
+            x=self.x ** other.x if isinstance(other, type(self)) else self.x ** other,
+            y=self.y ** other.y if isinstance(other, type(self)) else self.x ** other,
+            z=self.z ** other.z if isinstance(other, type(self)) else self.x ** other)
 
     def __iter__(self) -> Iterator:
         for coord in (self.x, self.y, self.z):
