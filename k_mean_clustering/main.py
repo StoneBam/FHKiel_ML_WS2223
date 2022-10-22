@@ -1,11 +1,8 @@
 #!/usr/bin/env python3.10
 import random
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import numpy as np
 
-from point import Point
+from point import Point, Matrix
 
 
 class RandomPointCloud(random.Random):
@@ -13,7 +10,12 @@ class RandomPointCloud(random.Random):
     def __init__(self, seed: str | int | None = None) -> None:
         super().__init__(seed)
 
-    def create(self, n_pts: int, bounds: tuple[float, float], biases: tuple[float, float, float], dims: int = 2) -> list[Point]:
+    def create(
+            self,
+            n_pts: int,
+            bounds: tuple[float, float] = (0.0, 1.0),
+            biases: tuple[float, float, float] = (0.0, 0.0, 0.0),
+            dims: int = 2) -> list[Point]:
         return [Point(
             x=self.uniform(*bounds) + biases[0] if dims >= 1 else 0.0,
             y=self.uniform(*bounds) + biases[1] if dims >= 2 else 0.0,
@@ -21,40 +23,66 @@ class RandomPointCloud(random.Random):
             ) for _ in range(n_pts)]
 
 
-global x_m
-global y_m
-global z_m
+class K_Means:
+
+    def __init__(self, k: list[Point], points: list[Point]) -> None:
+        self.k_points = k
+        self.k_lists = None
+        self.points = points
+        self.iterations = 0
+        self.fig = plt.figure()
+        self.ax = self.fig.add_subplot(projection='3d')
+
+    def k_distribute(self) -> None:
+        self.k_lists = [[] for _ in range(len(self.k_points))]
+        for point in self.points:
+            shortest = None
+            group = None
+            for index, k_point in enumerate(self.k_points):
+                distance = k_point.distance(point)
+                if shortest is None:
+                    shortest = distance
+                    group = index
+                elif shortest > distance:
+                    shortest = distance
+                    group = index
+            self.k_lists[group].append(point)
+
+    def k_mean(self) -> list[Point]:
+        ret = []
+        for pt_list in self.k_lists:
+            length = len(pt_list)
+            point = Point()
+            for pt in pt_list:
+                point += pt
+            point /= length
+            ret.append(point)
+        return ret
+
+    def rec_mean(self) -> None:
+        self.iterations += 1
+        self.k_distribute()
+        pt_mean = self.k_mean()
+        end = True
+        for m_pt, k_pt in zip(pt_mean, self.k_points):
+            if m_pt != k_pt:
+                end = False
+        print(self.k_points, pt_mean, self.iterations)
+        x, y, z = Matrix.extract_from_ptlist(self.k_lists[0])
+        x_2, y_2, z_2 = Matrix.extract_from_ptlist(self.k_lists[1])
+        x_m, y_m, z_m = Matrix.extract_from_ptlist(self.k_points)
+        self.ax.clear()
+        self.ax.scatter(x, y, z, c='r')
+        self.ax.scatter(x_2, y_2, z_2, c='g')
+        self.ax.scatter(x_m, y_m, z_m, c='b')
+        self.fig.show()
+        input()
+        self.k_points = pt_mean
+        if not end:
+            self.rec_mean()
 
 
 if __name__ == '__main__':
-    mpl.rcParams['animation.ffmpeg_path'] = r"C:\ffmpeg-5.1.2-essentials_build\bin\ffmpeg.exe"
-    rpc = RandomPointCloud('test')
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
-    rand_point_cloud_a: list[Point] = rpc.create(10, (0, 5), (0, 0, 0), dims=3)
-    rand_point_cloud_b: list[Point] = rpc.create(10, (0, 5), (5, 5, 5), dims=3)
-    m_points: list[Point] = rpc.create(1, (4, 6), (0, 0, 0), dims=3)
-    x, y, z = list(zip(*[(pt.x, pt.y, pt.z) for pt in rand_point_cloud_a]))
-    x_2, y_2, z_2 = list(zip(*[(pt.x, pt.y, pt.z) for pt in rand_point_cloud_b]))
-    x_m, y_m, z_m = list(zip(*[(pt.x, pt.y, pt.z) for pt in m_points]))
-    ax.scatter(x, y, z)
-    ax.scatter(x_2, y_2, z_2)
-    quiv = ax.quiver(x_m, y_m, z_m, 1, 1, 1, length=1)
-    scat = ax.scatter(x_m, y_m, z_m, marker='^')
-
-    def fla(x):
-        global x_m
-        global y_m
-        global z_m
-        x_m, y_m, z_m = [(1 + x,), (1 + x,), (1 + x,)]
-
-        global quiv
-        global scat
-        quiv.remove()
-        quiv = ax.quiver(x_m, y_m, z_m, 1, 1, 1, length=1, color='firebrick')
-        scat.remove()
-        scat = ax.scatter(x_m, y_m, z_m, marker='o', c='firebrick')
-
-    ani = animation.FuncAnimation(fig, func=fla, frames=np.linspace(0, 10, 100), interval=50)
-    ani.save("mov.mp4")
-    plt.show()
+    rpt = RandomPointCloud('test')
+    km = K_Means(rpt.create(2), rpt.create(20))
+    km.rec_mean()
