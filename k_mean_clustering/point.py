@@ -41,8 +41,8 @@ class Point:
     def __pow__(self, other: Self | int | float) -> Self:
         return Point(
             x=self.x ** other.x if isinstance(other, type(self)) else self.x ** other,
-            y=self.y ** other.y if isinstance(other, type(self)) else self.x ** other,
-            z=self.z ** other.z if isinstance(other, type(self)) else self.x ** other)
+            y=self.y ** other.y if isinstance(other, type(self)) else self.y ** other,
+            z=self.z ** other.z if isinstance(other, type(self)) else self.z ** other)
 
     def __iter__(self) -> Iterator:
         for coord in (self.x, self.y, self.z):
@@ -59,6 +59,9 @@ class Point:
         for coord in (other - self):
             ret += abs(coord)
         return ret
+
+    def round_display(self, digits: int = 2) -> tuple[float, float, float]:
+        return round(self.x, digits), round(self.y, digits), round(self.z, digits)
 
     @staticmethod
     def extract_from_ptlist(pt_list: list[Self]) -> tuple:

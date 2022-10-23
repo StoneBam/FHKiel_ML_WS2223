@@ -67,26 +67,46 @@ class K_Means:
         for m_pt, k_pt in zip(pt_mean, self.k_points):
             if m_pt != k_pt:
                 end = False
-        print(self.k_points, pt_mean, self.iterations)
+        print(f"Current points: {self.k_points}\nTarget points: {pt_mean}\nIterations: {self.iterations}")
         x, y, z = Point.extract_from_ptlist(self.k_lists[0])
         x_2, y_2, z_2 = Point.extract_from_ptlist(self.k_lists[1])
         x_3, y_3, z_3 = Point.extract_from_ptlist(self.k_lists[2])
         x_m, y_m, z_m = Point.extract_from_ptlist(self.k_points)
         x_s, y_s, z_s = Point.extract_from_ptlist(Point.subtract_elementwise_ptlist(pt_mean, self.k_points))
         self.ax.clear()
-        self.ax.scatter(x, y, z, c='r')
-        self.ax.scatter(x_2, y_2, z_2, c='g')
-        self.ax.scatter(x_3, y_3, z_3, c='#0f0f0f')
-        self.ax.scatter(x_m, y_m, z_m, c='b')
-        self.ax.quiver(x_m, y_m, z_m, x_s, y_s, z_s)
+        self.ax.scatter(x, y, z, c='#ff00008f')
+        self.ax.scatter(x_2, y_2, z_2, c='#00ff008f')
+        self.ax.scatter(x_3, y_3, z_3, c='#0000ff8f')
+        self.ax.scatter(x_m, y_m, z_m, c='#000000ff')
+        self.ax.quiver(x_m, y_m, z_m, x_s, y_s, z_s, color='#000000ff')
         self.fig.show()
-        input()
+        str_curr_pts = [x.round_display(2) for x in self.k_points]
+        str_next_pts = [x.round_display(2) for x in pt_mean]
+        plt.title(f'Iteration: {self.iterations}\nCurrent points: {str_curr_pts}\nTarget points: {str_next_pts}\n')
+        for angle in range(0, 360 + 1):
+            # Normalize the angle to the range [-180, 180] for display
+            angle_norm = (angle + 180) % 360 - 180
+
+            # Cycle through a full rotation of elevation, then azimuth, roll, and all
+            elev = azim = roll = 0
+            if angle <= 360:
+                azim = angle_norm
+
+            # Update the axis view and title
+            self.ax.view_init(elev, azim, roll)
+            plt.draw()
+            plt.pause(.001)
         self.k_points = pt_mean
         if not end:
             self.rec_mean()
+        else:
+            input('Press enter to stop...')
 
 
 if __name__ == '__main__':
-    rpt = RandomPointCloud('test')
-    km = K_Means(rpt.create(3), rpt.create(200, dims=3))
+    rpt = RandomPointCloud('test_2')
+    tc = rpt.create(200, biases=(1, 0, 0), dims=3)
+    tc.extend(rpt.create(200, biases=(0, 1, 0), dims=3))
+    tc.extend(rpt.create(200, biases=(0, 0, 1), dims=3))
+    km = K_Means(rpt.create(3, dims=2), tc)
     km.rec_mean()
