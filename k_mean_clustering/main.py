@@ -2,7 +2,7 @@
 import random
 import matplotlib.pyplot as plt
 
-from point import Point, Matrix
+from point import Point
 
 
 class RandomPointCloud(random.Random):
@@ -68,13 +68,17 @@ class K_Means:
             if m_pt != k_pt:
                 end = False
         print(self.k_points, pt_mean, self.iterations)
-        x, y, z = Matrix.extract_from_ptlist(self.k_lists[0])
-        x_2, y_2, z_2 = Matrix.extract_from_ptlist(self.k_lists[1])
-        x_m, y_m, z_m = Matrix.extract_from_ptlist(self.k_points)
+        x, y, z = Point.extract_from_ptlist(self.k_lists[0])
+        x_2, y_2, z_2 = Point.extract_from_ptlist(self.k_lists[1])
+        x_3, y_3, z_3 = Point.extract_from_ptlist(self.k_lists[2])
+        x_m, y_m, z_m = Point.extract_from_ptlist(self.k_points)
+        x_s, y_s, z_s = Point.extract_from_ptlist(Point.subtract_elementwise_ptlist(pt_mean, self.k_points))
         self.ax.clear()
         self.ax.scatter(x, y, z, c='r')
         self.ax.scatter(x_2, y_2, z_2, c='g')
+        self.ax.scatter(x_3, y_3, z_3, c='#0f0f0f')
         self.ax.scatter(x_m, y_m, z_m, c='b')
+        self.ax.quiver(x_m, y_m, z_m, x_s, y_s, z_s)
         self.fig.show()
         input()
         self.k_points = pt_mean
@@ -84,5 +88,5 @@ class K_Means:
 
 if __name__ == '__main__':
     rpt = RandomPointCloud('test')
-    km = K_Means(rpt.create(2), rpt.create(20))
+    km = K_Means(rpt.create(3), rpt.create(200, dims=3))
     km.rec_mean()

@@ -1,29 +1,8 @@
 #!/usr/bin/env python3.10
-from __future__ import annotations
 from dataclasses import dataclass
 import math
 from typing import Iterator
 from typing_extensions import Self
-
-
-@dataclass
-class Matrix:
-    x: list[float]
-    y: list[float]
-    z: list[float]
-
-    def __and__(self, other: Self | Point) -> Self:
-        return Matrix(
-            x=self.x.extend(other.x) if isinstance(other, type(self)) else self.x.append(other.x),
-            y=self.y.extend(other.y) if isinstance(other, type(self)) else self.y.append(other.y),
-            z=self.z.extend(other.z) if isinstance(other, type(self)) else self.z.append(other.z))
-
-    @staticmethod
-    def extract_from_ptlist(pt_list: list[Point]) -> Self:
-        ret = Matrix([], [], [])
-        for pt in pt_list:
-            ret = ret.__and__(pt)
-        return ret
 
 
 @dataclass
@@ -47,13 +26,7 @@ class Point:
             y=self.y - other.y,
             z=self.z - other.z)
 
-    def __and__(self, other: Self) -> Matrix:
-        return Matrix(
-            x=[self.x, other.x],
-            y=[self.y, other.y],
-            z=[self.z, other.z])
-
-    def __mul__(self, other: Self | int | float) -> Matrix:
+    def __mul__(self, other: Self | int | float) -> Self:
         return Point(
             x=self.x * other.x if isinstance(other, type(self)) else self.x * other,
             y=self.y * other.y if isinstance(other, type(self)) else self.x * other,
@@ -85,6 +58,17 @@ class Point:
         ret = 0.0
         for coord in (other - self):
             ret += abs(coord)
+        return ret
+
+    @staticmethod
+    def extract_from_ptlist(pt_list: list[Self]) -> tuple:
+        return list(zip(*[(*x,) for x in pt_list]))
+
+    @staticmethod
+    def subtract_elementwise_ptlist(pt_list_a: list[Self], pt_list_b: list[Self]) -> list[Self]:
+        ret = []
+        for a, b in zip(pt_list_a, pt_list_b):
+            ret.append(a - b)
         return ret
 
 
