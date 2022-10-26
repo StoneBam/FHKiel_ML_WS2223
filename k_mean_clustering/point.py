@@ -1,8 +1,7 @@
 #!/usr/bin/env python3.10
 from dataclasses import dataclass
 import math
-from typing import Iterator
-from typing_extensions import Self
+from typing import Iterator, Self
 
 
 @dataclass
