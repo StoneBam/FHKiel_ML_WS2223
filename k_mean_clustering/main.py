@@ -83,7 +83,7 @@ class K_Means:
         str_curr_pts = [x.round_display(2) for x in self.k_points]
         str_next_pts = [x.round_display(2) for x in pt_mean]
         plt.title(f'Iteration: {self.iterations}\nCurrent points: {str_curr_pts}\nTarget points: {str_next_pts}\n')
-        for angle in range(0, 360 + 1):
+        for angle in range(0, 360 + 1, 3):
             # Normalize the angle to the range [-180, 180] for display
             angle_norm = (angle + 180) % 360 - 180
 
@@ -105,8 +105,8 @@ class K_Means:
 
 if __name__ == '__main__':
     rpt = RandomPointCloud('test_2')
-    tc = rpt.create(200, biases=(1, 0, 0), dims=3)
-    tc.extend(rpt.create(200, biases=(0, 1, 0), dims=3))
-    tc.extend(rpt.create(200, biases=(0, 0, 1), dims=3))
+    tc = rpt.create(100, biases=(1, 0, 0), dims=3)
+    tc.extend(rpt.create(100, biases=(0, 1, 0), dims=3))
+    tc.extend(rpt.create(100, biases=(0, 0, 1), dims=3))
     km = K_Means(rpt.create(3, dims=2), tc)
     km.rec_mean()
