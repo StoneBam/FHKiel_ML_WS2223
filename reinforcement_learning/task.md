@@ -15,6 +15,21 @@ The roboid should have two modes (or a mix of both):
 - Exploration:
     In this mode the 'roboid' will travel with random choice from tile to
     tile and remember it's way and steps.
+
+```mermaid
+graph TD
+    Start --> ChT
+    ChT{Target?} -- Yes --> Save
+    ChT -- No --> Rand[Random Choice]
+    Rand --> ChP{Passable?}
+    ChP -- No --> Rand
+    ChP -- Yes --> Move
+    Move --> Mem[Memorize]
+    Mem --> Count[Steps++]
+    Count --> ChT
+    Save[Save memory] --> End
+```
+
 - Exploitation:
     In thiss mode the 'roboid' will use the during 'Exploration' gathered
     information to find the optimal way.
