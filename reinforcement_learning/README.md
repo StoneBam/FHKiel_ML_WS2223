@@ -1,4 +1,6 @@
-# Task
+# README
+
+## Task
 
 On a tiled map a 'roboid' starts at one position and has to find a target.
 It only can turn in 90 degree angles and can only see the adjacent tiles.
@@ -8,7 +10,39 @@ It has to find the optimal way to the target.
 As a Bonus on lab.open-roberta.org NEPO a EV3 robot shall use this general
 technique to find and move to a target.
 
-## Roboid
+### Program Architecture
+
+The program will use a basic model, view, presenter architecture (MVP).
+
+```mermaid
+graph LR
+    Model --updates--> Presenter --updates--> View
+    View --notifies--> Presenter --notifies--> Model
+```
+
+The roles are distributed as following:
+
+- Roboid will be the model.
+- Environment will be the view.
+- Presenter is on its own.
+
+```mermaid
+graph LR
+    Roboid --updates--> Presenter --updates--> Environment
+    Environment --notifies--> Presenter --notifies--> Roboid
+```
+
+This is for our task a good architecture, as we can change maps or robots and have less modifications to do as with a model, view, controller (MVC) approach.
+
+### Roboid
+
+The roboid should know some things:
+
+- own position
+- start and target
+- adjacent tiles info
+
+#### Modes
 
 The roboid should have two modes (or a mix of both):
 
@@ -41,26 +75,28 @@ graph TD
 Basic roboid functions should work together with the python api for EV3dev.
 This will be solved over a protocol layer.
 
-## Map
+### Environment
 
-- The map has a rectangular shape with variable sides (integer).
-- The map has closed borders, that means the roboid can't travel to the
+- The environment is a collection of maps and their respective info layers.
+- Each map has a rectangular shape with variable sides (integer).
+- Each map has closed borders, that means the roboid can't travel to the
   other side via stepping over the edge.
-- The map could contain terrain information like:
+- Each map could contain info layers like:
+  - "no-go"-Zones
   - height information
-  - difficulty of terrain
-    - light
-    - normal
-    - hard
-    - impossible
-- The map has a fixed or random starting and end point.
+  - terrain difficultly e.g.:
+    - light (no obstacles)
+    - normal (some obstacles)
+    - hard (many obstacles)
+    - impossible (wall, cliff or certain doom)
+  - transit zones, to allow traveling between maps.
 - The map has no memory and won't remember the roboids path.
 
-## Bonus
+### Bonus
 
-The map is the simulation field and targets and terrain are colored squares.
+In NEPO lab the Environment is the simulation field and targets and terrain are colored squares.
 
-### Useful notes
+#### Useful notes
 
 - The EV3dev robot uses Python as code generator.
 - Fraunhofer institute infos [link](https://jira.iais.fraunhofer.de/wiki/display/ORInfo/Programming+EV3#ProgrammingEV3-ProgrammingLanguagesforCodeGeneration)
