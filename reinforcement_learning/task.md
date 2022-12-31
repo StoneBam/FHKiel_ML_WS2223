@@ -31,23 +31,23 @@ graph TD
 ```
 
 - Exploitation:
-    In thiss mode the 'roboid' will use the during 'Exploration' gathered
+    In this mode the 'roboid' will use the during 'Exploration' gathered
     information to find the optimal way.
     The optimal way could be determined by a few metrics:
   - Least amount of steps to target
   - Least amount of energy needed
   - Minimal steps with minimal energy
 
-Basic roboid funcions should work together with the python api for EV3dev.
-This will be solved over a potocol layer.
+Basic roboid functions should work together with the python api for EV3dev.
+This will be solved over a protocol layer.
 
 ## Map
 
 - The map has a rectangular shape with variable sides (integer).
-- The map has clossed borders, that means the roboid can't travel to the
+- The map has closed borders, that means the roboid can't travel to the
   other side via stepping over the edge.
 - The map could contain terrain information like:
-  - heigth information
+  - height information
   - difficulty of terrain
     - light
     - normal
@@ -63,5 +63,5 @@ The map is the simulation field and targets and terrain are colored squares.
 ### Useful notes
 
 - The EV3dev robot uses Python as code generator.
-- Fraunhofer intitute infos [link](https://jira.iais.fraunhofer.de/wiki/display/ORInfo/Programming+EV3#ProgrammingEV3-ProgrammingLanguagesforCodeGeneration)
+- Fraunhofer institute infos [link](https://jira.iais.fraunhofer.de/wiki/display/ORInfo/Programming+EV3#ProgrammingEV3-ProgrammingLanguagesforCodeGeneration)
 - Python API reference for EV3dev [link](https://ev3dev-lang.readthedocs.io/projects/python-ev3dev/en/stable/spec.html)
