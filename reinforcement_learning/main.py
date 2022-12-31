@@ -1,12 +1,12 @@
-from model import Model
+from model import Roboid
 from presenter import Presenter
-from view import View
+from view import Environment
 
 
 def main():
     # Create model, view and presenter
-    model = Model()
-    view = View()
+    model = Roboid()
+    view = Environment()
     presenter = Presenter(model, view)
 
     # Run the application
