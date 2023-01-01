@@ -30,12 +30,17 @@ def sanity_check_args(args: argparse.Namespace) -> None:
     if args.target[0] >= args.mapsize[0] or args.target[1] >= args.mapsize[1]:
         raise ValueError("Target position must be inside the map")
 
+    # Check the number of explorations
+    if args.explorations <= 0:
+        raise ValueError("Number of explorations must be greater than 0")
+
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--mapsize', type=int, nargs=2, default=(10, 10))
-    parser.add_argument('-s', '--start', type=int, nargs=2, default=(8, 8))
+    parser.add_argument('-m', '--mapsize', type=int, nargs=2, default=(20, 20))
+    parser.add_argument('-s', '--start', type=int, nargs=2, default=(18, 18))
     parser.add_argument('-t', '--target', type=int, nargs=2, default=(2, 2))
+    parser.add_argument('-e', '--explorations', type=int, default=20)
     args = parser.parse_args()
 
     # Sanity check the arguments
@@ -52,7 +57,7 @@ def main():
     presenter = Presenter(model, view)
 
     # Run the application
-    presenter.run()
+    presenter.run(args.explorations)
 
 
 if __name__ == "__main__":
