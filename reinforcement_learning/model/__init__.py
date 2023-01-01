@@ -9,10 +9,12 @@ class Roboid:
     def __init__(self, mapshape: tuple[int, int], pos_start: tuple[int, int], pos_target: tuple[int, int]) -> None:
         self.position = pos_start
         self.pos_start = pos_start
-        self.pos_target = (0, 0)
+        self.pos_target = pos_target
+        self.steps = 0
 
+        self.mapshape = mapshape
         self.exploit_map = np.zeros(mapshape, dtype=np.float64)
-        self.memory_map = np.zeros(mapshape, dtype=np.int64)
+        self.memory_map = np.zeros(mapshape, dtype=np.float64)
         self.walk_map = np.zeros(mapshape, dtype=np.float64)
 
         self.adjacent_pos = {}
@@ -29,7 +31,8 @@ class Roboid:
             tuple[int, int]: new position
         """
         self.position = position
-        self.memory_map[position] += 1
+        self.steps += 1
+        self.memory_map[position] = self.steps
         return position
 
     def get_position(self) -> tuple[int, int]:
@@ -87,13 +90,14 @@ class Roboid:
         Returns:
             None
         """
+        ret = {}
         for position in positions:
-            if self.is_forbidden(positions[position]):
-                del positions[position]
-        if positions == {}:
+            if not self.is_forbidden(positions[position]):
+                ret[position] = positions[position]
+        if ret == {}:
             print("No adjacent position is available, staying at the same position")
-            positions = {self.position: 0}
-        self.adjacent_pos = positions
+            ret = {self.position: 0}
+        self.adjacent_pos = ret
 
     def get_adjacent_pos(self) -> dict[tuple[int, int]: float]:
         """Get the adjacent positions.
@@ -129,7 +133,13 @@ class Roboid:
         Returns:
             bool: True if the current position is the target position
         """
-        return self.position == self.pos_target
+        x, y = self.position
+        x_target, y_target = self.pos_target
+        ret = x == x_target and y == y_target
+        if ret:
+            print("Target position found!")
+            return True
+        return False
 
     def is_forbidden(self, pos_value: float) -> bool:
         """Check if the given position is forbidden.
@@ -171,6 +181,8 @@ class Roboid:
         Returns:
             None
         """
+        print('Resetting position to start position')
+        self.steps = 0
         self.set_position(self.pos_start)
 
     # Actions maps
@@ -181,7 +193,7 @@ class Roboid:
         Returns:
             None
         """
-        self.exploit_map = self.memory_map / self.memory_map.max()
+        self.exploit_map = (self.exploit_map + (self.memory_map / self.memory_map.max())) / 2
 
     def wipe_exploit_map(self) -> None:
         """Wipe the exploit map.
@@ -225,10 +237,18 @@ class Roboid:
         Returns:
             self.exploit_map (np.ndarray): exploit map
         """
+        iteration_stop = (self.mapshape[0] * self.mapshape[1]) ** 3
+        print('Start exploring the map')
         while not self.is_target():
             adjacent_pos = self.calc_adjacent_pos_list()
             self.set_adjacent_pos(adjacent_pos_func(adjacent_pos))
             self.set_position(self.choose_adjacent_pos())
+            if self.steps > iteration_stop:
+                print("Too many iterations, stopping exploration")
+                break
+        print('End exploring the map')
+        self.calc_exploit_map()
+        self.wipe_memory_map()
         return self.exploit_map
 
     def exploit(self) -> np.ndarray:
@@ -237,8 +257,11 @@ class Roboid:
         Returns:
             self.walk_map (np.ndarray): walk map
         """
+        iteration_stop = (self.mapshape[0] * self.mapshape[1])
+        print('Start exploiting the map')
+        self.reset_pos()
         while not self.is_target():
-            adjacent_pos = self.calc_adjacent_pos_list(self.position)
+            adjacent_pos = self.calc_adjacent_pos_list()
             pos_walk: tuple[int, int]
             for index, pos in enumerate(adjacent_pos):
                 if index == 0:
@@ -247,4 +270,8 @@ class Roboid:
                     pos_walk = pos
             self.walk_map[pos_walk] += 1
             self.set_position(pos_walk)
+            if self.steps > iteration_stop:
+                print("Too many iterations, stopping exploitation")
+                break
+        print('Arrived at the target position')
         return self.walk_map
