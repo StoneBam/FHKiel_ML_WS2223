@@ -126,8 +126,8 @@ class Environment:
             cbar (bool, optional): Show colorbar. Defaults to True.
         """
         ax.xaxis.tick_top()
-        annot = True if max(_map.shape) < 20 else False
-        sns.heatmap(_map, annot=annot, fmt=".2f", cmap="hot", ax=ax, cbar=cbar, square=True, vmin=0, vmax=1)
+        annot = True if max(_map.shape) <= 20 else False
+        sns.heatmap(_map, annot=annot, fmt=".2f", cmap="RdYlGn", ax=ax, cbar=cbar, square=True, vmin=-1, vmax=1)
 
     # Map display methods
 
