@@ -231,24 +231,52 @@ class Roboid:
 
     # Modi operandi
 
-    def explore(self, adjacent_pos_func: Callable) -> np.ndarray:
-        """Explore the map.
+    def explore_once(self, adjacent_pos_func: Callable) -> np.ndarray:
+        """Explore the map once.
+
+        Args:
+            adjacent_pos_func (Callable): function to calculate the adjacent positions
 
         Returns:
             self.exploit_map (np.ndarray): exploit map
         """
+
+        # Setup
+        self.wipe_memory_map()
+        self.reset_pos()
         iteration_stop = (self.mapshape[0] * self.mapshape[1]) ** 3
+
+        # Main loop
         print('Start exploring the map')
         while not self.is_target():
             adjacent_pos = self.calc_adjacent_pos_list()
             self.set_adjacent_pos(adjacent_pos_func(adjacent_pos))
             self.set_position(self.choose_adjacent_pos())
+
             if self.steps > iteration_stop:
+                # Stop exploration if too many iterations
                 print("Too many iterations, stopping exploration")
                 break
-        print('End exploring the map')
+
+        # Wrap up
         self.calc_exploit_map()
-        self.wipe_memory_map()
+        print('End exploring the map')
+        return self.exploit_map
+
+    def explore(self, adjacent_pos_func: Callable, explorations: int) -> np.ndarray:
+        """Explore the map.
+
+        Args:
+            adjacent_pos_func (Callable): function to calculate the adjacent positions
+            explorations (int): number of explorations
+
+        Returns:
+            self.exploit_map (np.ndarray): exploit map
+        """
+        num_explorations = 0
+        while num_explorations < explorations:
+            self.explore_once(adjacent_pos_func)
+            num_explorations += 1
         return self.exploit_map
 
     def exploit(self) -> np.ndarray:
@@ -257,21 +285,38 @@ class Roboid:
         Returns:
             self.walk_map (np.ndarray): walk map
         """
+
+        # Setup
+        self.wipe_walk_map()
         iteration_stop = (self.mapshape[0] * self.mapshape[1])
+
+        # Main loop
         print('Start exploiting the map')
-        self.reset_pos()
         while not self.is_target():
+            self.walk_map[self.position] = self.steps
             adjacent_pos = self.calc_adjacent_pos_list()
-            pos_walk: tuple[int, int]
-            for index, pos in enumerate(adjacent_pos):
-                if index == 0:
-                    pos_walk = pos
-                if self.exploit_map[pos] > self.exploit_map[pos_walk]:
-                    pos_walk = pos
-            self.walk_map[pos_walk] += 1
-            self.set_position(pos_walk)
+            exploit_value = 0
+            exploit_pos = None
+            for pos in adjacent_pos:
+                if self.walk_map[pos] > 0:
+                    continue
+                if self.exploit_map[pos] > exploit_value:
+                    exploit_value = self.exploit_map[pos]
+                    exploit_pos = pos
+
+            if exploit_pos is None:
+                print('No adjacent position is available, stopping exploitation')
+                break
             if self.steps > iteration_stop:
                 print("Too many iterations, stopping exploitation")
                 break
+
+            self.set_position(exploit_pos)
+
+        # Wrap up
+        self.walk_map[self.position] = self.steps
         print('Arrived at the target position')
+        self.wipe_memory_map()
+        self.wipe_exploit_map()
+        self.reset_pos()
         return self.walk_map
