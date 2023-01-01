@@ -193,7 +193,7 @@ class Roboid:
         Returns:
             None
         """
-        self.exploit_map = (self.exploit_map + (self.memory_map / self.memory_map.max())) / 2
+        self.exploit_map = self.memory_map / self.memory_map.max()
 
     def wipe_exploit_map(self) -> None:
         """Wipe the exploit map.
