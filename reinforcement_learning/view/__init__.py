@@ -1,3 +1,4 @@
+import argparse
 from typing import Callable
 
 import numpy as np
@@ -127,8 +128,18 @@ class Environment:
         plt.show()
 
 
-if __name__ == "__main__":
-    env = Environment((100, 100))
+def main() -> None:
+    # Parse command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mapsize', type=int, nargs=2, default=(10, 10))
+    args = parser.parse_args()
+
+    # Create environment
+    env = Environment(args.mapsize)
     rng_map = env.create_random_map()
     env.show_map(rng_map, 'heatmap')
     env.show_all_maps(rng_map)
+
+
+if __name__ == "__main__":
+    main()
