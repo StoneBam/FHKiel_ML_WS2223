@@ -152,7 +152,8 @@ class Environment:
         """
         ax.xaxis.tick_top()
         annot = True if max(_map.shape) <= 20 else False
-        sns.heatmap(_map, annot=annot, fmt=".2f", cmap="RdYlGn", ax=ax, cbar=cbar, square=True, vmin=-1, vmax=1)
+        fmt = ".2f" if max(_map.shape) <= 20 else ".1f"
+        sns.heatmap(_map, annot=annot, fmt=fmt, cmap="RdYlGn", ax=ax, cbar=cbar, square=True, vmin=-1)
 
     # Map display methods
 
@@ -166,9 +167,11 @@ class Environment:
         Returns:
             None
         """
-        _, ax = plt.subplots(1, 1, figsize=(5, 5), subplot_kw={'aspect': 'equal'})
+        _, ax = plt.subplots(1, 1, subplot_kw={'aspect': 'equal'})
         self.info_layers.get(_map_key, self.heatmap)(_map, ax)
         plt.tight_layout()
+        mng = plt.get_current_fig_manager()
+        mng.window.state("zoomed")
         plt.show()
 
     def show_all_maps(self, _map: np.ndarray) -> None:
@@ -180,10 +183,12 @@ class Environment:
         Returns:
             None
         """
-        _, axes = plt.subplots(1, 2, figsize=(10, 5), subplot_kw={'aspect': 'equal'})
+        _, axes = plt.subplots(1, 2, subplot_kw={'aspect': 'equal'})
         self.heatmap(_map, axes[0], False)
         self.contourmap(_map, axes[1])
         plt.tight_layout()
+        mng = plt.get_current_fig_manager()
+        mng.window.state("zoomed")
         plt.show()
 
 
