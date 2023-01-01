@@ -11,7 +11,7 @@ from scipy import ndimage
 class Environment:
 
     def __init__(self, mapsize: tuple[int, int] = (10, 10)) -> None:
-        self.mapsize = (x + 2 for x in mapsize)
+        self.mapsize = mapsize
 
         self.info_layers: dict[str, Callable] = {
             'heatmap': self.heatmap,

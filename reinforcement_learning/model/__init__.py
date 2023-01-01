@@ -6,7 +6,7 @@ import numpy as np
 
 class Roboid:
 
-    def __init__(self, mapshape: tuple[int, int], pos_start: tuple[int, int]) -> None:
+    def __init__(self, mapshape: tuple[int, int], pos_start: tuple[int, int], pos_target: tuple[int, int]) -> None:
         self.position = pos_start
         self.pos_start = pos_start
         self.pos_target = (0, 0)
