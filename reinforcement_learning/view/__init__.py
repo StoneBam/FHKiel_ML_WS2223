@@ -2,14 +2,15 @@ import argparse
 from typing import Callable
 
 import numpy as np
-from scipy import ndimage
-from matplotlib import pyplot as plt
 import seaborn as sns
+from matplotlib import pyplot as plt
+from PIL import Image
+from scipy import ndimage
 
 
 class Environment:
 
-    def __init__(self, mapsize: tuple[int, int]) -> None:
+    def __init__(self, mapsize: tuple[int, int] = (10, 10)) -> None:
         self.mapsize = (x + 2 for x in mapsize)
 
         self.info_layers: dict[str, Callable] = {
@@ -62,6 +63,39 @@ class Environment:
         _map[:, -1] = -1
         return _map
 
+    def load_map_from_image(self, image_path: str, borders: bool = True) -> np.ndarray:
+        """Load a map from an image.
+
+        Args:
+            image_path (str): path to the image
+            borders (bool, optional): Place borders. Defaults to True.
+
+        Returns:
+            np.ndarray: map loaded from the image
+        """
+        image = Image.open(image_path)
+        self.mapsize = image.size
+        image = np.array(image, dtype=np.float64)
+        image = image[:, :, 0] / 255 if image.ndim == 3 else image / 255
+        threshold = 0 >= image
+        image[threshold] = -1
+        if borders:
+            image = self.place_borders(image)
+        return image
+
+    def save_map_to_image(self, _map: np.ndarray, image_path: str) -> None:
+        """Save a map to an image.
+
+        Args:
+            _map (np.ndarray): map to be saved
+            image_path (str): path to the image
+
+        Returns:
+            None
+        """
+        image = Image.fromarray(np.uint8(_map * 255))
+        image.save(image_path, bitmap_format="PNG")
+
     # Map visualization methods
 
     def contourmap(self, _map: np.ndarray, ax: plt.Axes) -> None:
@@ -108,7 +142,7 @@ class Environment:
             None
         """
         _, ax = plt.subplots(1, 1, figsize=(5, 5), subplot_kw={'aspect': 'equal'})
-        self.info_layers[_map_key](_map, ax)
+        self.info_layers.get(_map_key, self.heatmap)(_map, ax)
         plt.tight_layout()
         plt.show()
 
@@ -131,14 +165,25 @@ class Environment:
 def main() -> None:
     # Parse command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mapsize', type=int, nargs=2, default=(10, 10))
+    parser.add_argument('-m', '--mapsize', type=int, nargs=2, default=(10, 10))
+    parser.add_argument('-d', '--display', type=str, default='heatmap')
+    parser.add_argument('-l', '--load', type=str, default='testmap.png')
+    parser.add_argument('-s', '--save', type=str, default=None)
+    parser.add_argument('-b', '--no-borders', action='store_false', dest='borders')
     args = parser.parse_args()
 
     # Create environment
     env = Environment(args.mapsize)
+
+    # Random maps
     rng_map = env.create_random_map()
-    env.show_map(rng_map, 'heatmap')
+    env.show_map(rng_map, args.display)
     env.show_all_maps(rng_map)
+
+    # Maps from images
+    if args.load:
+        img_map = env.load_map_from_image(args.load, borders=args.borders)
+        env.show_map(img_map, args.display)
 
 
 if __name__ == "__main__":
