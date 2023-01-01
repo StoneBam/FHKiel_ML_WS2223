@@ -1,28 +1,12 @@
 import random
-from typing import Protocol
+from typing import Callable
 
 import numpy as np
 
 
-class Presenter(Protocol):
-    def new_roboid_pos(self, pos: tuple[int, int]) -> None:
-        ...
-
-    def request_pos_value(self, pos: tuple[int, int]) -> float:
-        ...
-
-    def exploration_done(self, exploit_map: np.ndarray) -> None:
-        ...
-
-    def exploitation_done(self, walk_map: np.ndarray) -> None:
-        ...
-
-
 class Roboid:
 
-    def __init__(self, presenter: Presenter, mapshape: tuple[int, int], pos_start: tuple[int, int]) -> None:
-        self.presenter = presenter
-
+    def __init__(self, mapshape: tuple[int, int], pos_start: tuple[int, int]) -> None:
         self.position = pos_start
         self.pos_start = pos_start
         self.pos_target = (0, 0)
@@ -31,19 +15,22 @@ class Roboid:
         self.memory_map = np.zeros(mapshape, dtype=np.int64)
         self.walk_map = np.zeros(mapshape, dtype=np.float64)
 
-        self.adjacent_pos = []
+        self.adjacent_pos = {}
 
     # Getters and setters position
 
-    def set_position(self, position: tuple[int, int]) -> None:
+    def set_position(self, position: tuple[int, int]) -> tuple[int, int]:
         """Set the current position.
 
         Args:
             position (tuple[int, int]): current position
+
+        Returns:
+            tuple[int, int]: new position
         """
         self.position = position
         self.memory_map[position] += 1
-        self.presenter.new_roboid_pos(position)
+        return position
 
     def get_position(self) -> tuple[int, int]:
         """Get the current position.
@@ -91,18 +78,24 @@ class Roboid:
         """
         return self.pos_target
 
-    def set_adjacent_pos(self, positions: list[tuple[int, int]]) -> None:
+    def set_adjacent_pos(self, positions: dict[tuple[int, int]: float]) -> None:
         """Set the adjacent positions.
 
         Args:
-            positions (list[tuple[int, int]]): adjacent positions
+            positions (dict[tuple[int, int]: float]): adjacent positions
 
         Returns:
             None
         """
+        for position in positions:
+            if self.is_forbidden(positions[position]):
+                del positions[position]
+        if positions == {}:
+            print("No adjacent position is available, staying at the same position")
+            positions = {self.position: 0}
         self.adjacent_pos = positions
 
-    def get_adjacent_pos(self) -> list[tuple[int, int]]:
+    def get_adjacent_pos(self) -> dict[tuple[int, int]: float]:
         """Get the adjacent positions.
 
         Returns:
@@ -138,36 +131,31 @@ class Roboid:
         """
         return self.position == self.pos_target
 
-    def is_forbidden(self, position: tuple[int, int]) -> bool:
+    def is_forbidden(self, pos_value: float) -> bool:
         """Check if the given position is forbidden.
 
         Args:
-            position (tuple[int, int]): position to check
+            pos_value (float): value of the given position
 
         Returns:
             bool: True if the given position is forbidden
         """
-        x, y = position
-        if x < 0 or y < 0:
-            return True
-        elif self.presenter.request_pos_value(position) < 0:
-            return True
+        return pos_value < 0
 
     # Actions positions
 
-    def calc_adjacent_pos(self) -> None:
+    def calc_adjacent_pos_list(self) -> list[tuple[int, int]]:
         """Calculate the adjacent positions.
 
         Returns:
-            None
+            list[tuple[int, int]]: adjacent positions
         """
         x, y = self.position
-        adjacent_pos = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
-        adjacent_pos = [pos for pos in adjacent_pos if not self.is_forbidden(pos)]
-        if not adjacent_pos:
-            adjacent_pos = [self.position]
-            print('Impossible to move, stay at the same position.')
-        self.set_adjacent_pos(adjacent_pos)
+        positions = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+        for pos in positions:
+            if pos[0] < 0 or pos[1] < 0:
+                positions.remove(pos)
+        return positions
 
     def choose_adjacent_pos(self) -> tuple[int, int]:
         """Choose a random adjacent position to the current position.
@@ -175,7 +163,7 @@ class Roboid:
         Returns:
             tuple[int, int]: chosen position
         """
-        return random.choice(self.adjacent_pos)
+        return random.choice(list(self.adjacent_pos))
 
     def reset_pos(self) -> None:
         """Reset the current position to the start position.
@@ -219,33 +207,44 @@ class Roboid:
         """
         self.walk_map = np.zeros(self.walk_map.shape, dtype=np.float64)
 
+    def wipe_maps(self) -> None:
+        """Wipe all maps.
+
+        Returns:
+            None
+        """
+        self.wipe_exploit_map()
+        self.wipe_memory_map()
+        self.wipe_walk_map()
+
     # Modi operandi
 
-    def explore(self) -> None:
+    def explore(self, adjacent_pos_func: Callable) -> np.ndarray:
         """Explore the map.
 
         Returns:
-            None
+            self.exploit_map (np.ndarray): exploit map
         """
         while not self.is_target():
-            self.calc_adjacent_pos()
+            adjacent_pos = self.calc_adjacent_pos_list()
+            self.set_adjacent_pos(adjacent_pos_func(adjacent_pos))
             self.set_position(self.choose_adjacent_pos())
-        self.presenter.exploration_done(self.exploit_map)
+        return self.exploit_map
 
-    def exploit(self) -> None:
+    def exploit(self) -> np.ndarray:
         """Exploit the map.
 
         Returns:
-            None
+            self.walk_map (np.ndarray): walk map
         """
         while not self.is_target():
-            self.calc_adjacent_pos()
+            adjacent_pos = self.calc_adjacent_pos_list(self.position)
             pos_walk: tuple[int, int]
-            for index, pos in enumerate(self.adjacent_pos):
+            for index, pos in enumerate(adjacent_pos):
                 if index == 0:
                     pos_walk = pos
                 if self.exploit_map[pos] > self.exploit_map[pos_walk]:
                     pos_walk = pos
             self.walk_map[pos_walk] += 1
             self.set_position(pos_walk)
-        self.presenter.exploitation_done(self.walk_map)
+        return self.walk_map
