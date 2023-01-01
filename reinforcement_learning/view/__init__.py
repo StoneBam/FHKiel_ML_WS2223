@@ -93,6 +93,8 @@ class Environment:
         Returns:
             None
         """
+        threshold = 0 > _map
+        _map[threshold] = 0
         image = Image.fromarray(np.uint8(_map * 255))
         image.save(image_path, bitmap_format="PNG")
 
