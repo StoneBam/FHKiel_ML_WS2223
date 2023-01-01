@@ -18,6 +18,29 @@ class Environment:
             'contourmap': self.contourmap
         }
 
+        self.map = self.create_empty_map(borders=True)
+
+    # Setters and getters
+
+    def set_map(self, _map: np.ndarray) -> None:
+        """Set the map.
+
+        Args:
+            _map (np.ndarray): map to be set
+
+        Returns:
+            None
+        """
+        self.map = _map
+
+    def get_map(self) -> np.ndarray:
+        """Get the map.
+
+        Returns:
+            np.ndarray: map
+        """
+        return self.map
+
     # Map creation methods
 
     def create_empty_map(self, borders: bool = False) -> np.ndarray:
@@ -81,21 +104,21 @@ class Environment:
         image[threshold] = -1
         if borders:
             image = self.place_borders(image)
+        self.set_map(image)
         return image
 
-    def save_map_to_image(self, _map: np.ndarray, image_path: str) -> None:
+    def save_map_to_image(self, image_path: str) -> None:
         """Save a map to an image.
 
         Args:
-            _map (np.ndarray): map to be saved
             image_path (str): path to the image
 
         Returns:
             None
         """
-        threshold = 0 > _map
-        _map[threshold] = 0
-        image = Image.fromarray(np.uint8(_map * 255))
+        threshold = 0 > self.map
+        self.map[threshold] = 0
+        image = Image.fromarray(np.uint8(self.map * 255))
         image.save(image_path, bitmap_format="PNG")
 
     # Map visualization methods
