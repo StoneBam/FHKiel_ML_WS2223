@@ -32,6 +32,9 @@ class Model(Protocol):
     def get_steps(self) -> int:
         ...
 
+    def get_explorations(self) -> int:
+        ...
+
 
 class Presenter:
 
@@ -53,7 +56,10 @@ class Presenter:
     def run(self, explorations: int = 1) -> None:
         exploit_map = self.model.explore(self.adjacent_pos, explorations)
         show_map = self.view.get_map() + exploit_map
-        metrics = f'Explorations: {explorations}; Steps: {self.model.get_steps()}; Optimal: {self.model.calc_manhattan_distance()}'
+        distance = self.model.get_steps()
+        optimal = self.model.calc_manhattan_distance()
+        explorations = self.model.get_explorations()
+        metrics = f'Explorations: {explorations}; Steps: {distance}; Optimal: {optimal}'
         self.view.show_map(show_map, 'heatmap', metrics)
 
         walk_map = self.model.exploit()
