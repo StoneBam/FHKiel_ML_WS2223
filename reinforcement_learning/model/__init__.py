@@ -125,6 +125,14 @@ class Roboid:
         """
         return self.exploit_map
 
+    def get_steps(self) -> int:
+        """Get the number of steps.
+
+        Returns:
+            int: number of steps
+        """
+        return self.steps
+
     # Checks
 
     def is_target(self) -> bool:
@@ -166,6 +174,16 @@ class Roboid:
             if pos[0] < 0 or pos[1] < 0:
                 positions.remove(pos)
         return positions
+
+    def calc_manhattan_distance(self) -> float:
+        """Calculate the Manhattan distance between the current position and the target position.
+
+        Returns:
+            float: Manhattan distance
+        """
+        x, y = self.pos_start
+        x_target, y_target = self.pos_target
+        return abs(x - x_target) + abs(y - y_target)
 
     def choose_adjacent_pos(self) -> tuple[int, int]:
         """Choose a random adjacent position to the current position.
@@ -279,6 +297,10 @@ class Roboid:
         num_explorations = 0
         while num_explorations < explorations:
             self.explore_once(adjacent_pos_func)
+            if self.memory_map.max() <= self.calc_manhattan_distance():
+                # Stop exploration min distance is reached
+                print("Min distance reached, stopping exploration")
+                break
             num_explorations += 1
         return self.exploit_map
 
