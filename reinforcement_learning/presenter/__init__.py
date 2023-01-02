@@ -17,6 +17,9 @@ class View(Protocol):
     def show_all_maps(self, _map: np.ndarray, title: str) -> None:
         ...
 
+    def load_map_from_image(self, image_path: str, borders: bool = True) -> np.ndarray:
+        ...
+
 
 class Model(Protocol):
 
@@ -54,6 +57,10 @@ class Presenter:
         return {pos: self.view.get_map()[pos] for pos in positions}
 
     def run(self, explorations: int = 1) -> None:
+        print('Running presenter...')
+        self.view.load_map_from_image('reinforcement_learning/view/testmap.png')
+
+        print('Starting exploration...')
         exploit_map = self.model.explore(self.adjacent_pos, explorations)
         show_map = self.view.get_map() + exploit_map
         distance = self.model.get_steps()
