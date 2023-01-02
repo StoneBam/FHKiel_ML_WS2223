@@ -26,6 +26,12 @@ class Model(Protocol):
     def exploit(self) -> np.ndarray:
         ...
 
+    def calc_manhattan_distance(self) -> int:
+        ...
+
+    def get_steps(self) -> int:
+        ...
+
 
 class Presenter:
 
@@ -47,8 +53,13 @@ class Presenter:
     def run(self, explorations: int = 1) -> None:
         exploit_map = self.model.explore(self.adjacent_pos, explorations)
         show_map = self.view.get_map() + exploit_map
-        self.view.show_all_maps(show_map)
+        metrics = f'Explorations: {explorations}; Steps: {self.model.get_steps()}; Optimal: {self.model.calc_manhattan_distance()}'
+        self.view.show_map(show_map, 'heatmap', metrics)
 
         walk_map = self.model.exploit()
         show_map = self.view.get_map() + walk_map
-        self.view.show_all_maps(show_map)
+        distance = self.model.get_steps()
+        optimal = self.model.calc_manhattan_distance()
+        f_rel = abs(distance - optimal) / optimal
+        metrics = f'Distance walked: {distance}; Optimal: {optimal}; F_rel: {f_rel * 100} %'
+        self.view.show_map(show_map, 'heatmap', metrics)
