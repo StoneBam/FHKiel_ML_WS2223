@@ -157,7 +157,7 @@ class Environment:
 
     # Map display methods
 
-    def show_map(self, _map, _map_key: str) -> None:
+    def show_map(self, _map, _map_key: str, title: str = '') -> None:
         """Show a single map with a specific visualization method.
 
         Args:
@@ -169,12 +169,13 @@ class Environment:
         """
         _, ax = plt.subplots(1, 1, subplot_kw={'aspect': 'equal'})
         self.info_layers.get(_map_key, self.heatmap)(_map, ax)
+        plt.title(title)
         plt.tight_layout()
         mng = plt.get_current_fig_manager()
         mng.window.state("zoomed")
         plt.show()
 
-    def show_all_maps(self, _map: np.ndarray) -> None:
+    def show_all_maps(self, _map: np.ndarray, title: str = '') -> None:
         """Show all maps with all visualization methods.
 
         Args:
@@ -186,6 +187,7 @@ class Environment:
         _, axes = plt.subplots(1, 2, subplot_kw={'aspect': 'equal'})
         self.heatmap(_map, axes[0], False)
         self.contourmap(_map, axes[1])
+        plt.title(title)
         plt.tight_layout()
         mng = plt.get_current_fig_manager()
         mng.window.state("zoomed")

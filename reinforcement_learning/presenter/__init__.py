@@ -11,10 +11,10 @@ class View(Protocol):
     def set_map(self, _map: np.ndarray) -> None:
         ...
 
-    def show_map(self, _map, _map_key: str) -> None:
+    def show_map(self, _map, _map_key: str, title: str) -> None:
         ...
 
-    def show_all_maps(self, _map: np.ndarray) -> None:
+    def show_all_maps(self, _map: np.ndarray, title: str) -> None:
         ...
 
 
