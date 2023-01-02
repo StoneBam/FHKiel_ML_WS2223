@@ -154,7 +154,6 @@ class Roboid:
         x_target, y_target = self.pos_target
         ret = x == x_target and y == y_target
         if ret:
-            print("Target position found!")
             return True
         return False
 
@@ -208,7 +207,6 @@ class Roboid:
         Returns:
             None
         """
-        print('Resetting position to start position')
         self.steps = 0
         self.set_position(self.pos_start)
 
@@ -277,7 +275,6 @@ class Roboid:
         iteration_stop = (self.mapshape[0] * self.mapshape[1]) ** 3
 
         # Main loop
-        print('Start exploring the map')
         while not self.is_target():
             adjacent_pos = self.calc_adjacent_pos_list()
             self.set_adjacent_pos(adjacent_pos_func(adjacent_pos))
@@ -290,7 +287,6 @@ class Roboid:
 
         # Wrap up
         self.calc_exploit_map()
-        print('End exploring the map')
         return self.exploit_map
 
     def explore(self, adjacent_pos_func: Callable, explorations: int) -> np.ndarray:
