@@ -11,6 +11,7 @@ class Roboid:
         self.pos_start = pos_start
         self.pos_target = pos_target
         self.steps = 0
+        self.num_explorations = 0
 
         self.mapshape = mapshape
         self.exploit_map = np.zeros(mapshape, dtype=np.float64)
@@ -132,6 +133,14 @@ class Roboid:
             int: number of steps
         """
         return self.steps
+
+    def get_explorations(self) -> int:
+        """Get the number of explorations.
+
+        Returns:
+            int: number of explorations
+        """
+        return self.num_explorations
 
     # Checks
 
@@ -294,14 +303,14 @@ class Roboid:
         Returns:
             self.exploit_map (np.ndarray): exploit map
         """
-        num_explorations = 0
-        while num_explorations < explorations:
+        self.num_explorations = 0
+        while self.num_explorations < explorations:
             self.explore_once(adjacent_pos_func)
             if self.memory_map.max() <= self.calc_manhattan_distance():
                 # Stop exploration min distance is reached
                 print("Min distance reached, stopping exploration")
                 break
-            num_explorations += 1
+            self.num_explorations += 1
         return self.exploit_map
 
     def exploit(self) -> np.ndarray:
