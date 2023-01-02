@@ -193,7 +193,10 @@ class Roboid:
         Returns:
             None
         """
-        self.exploit_map = self.memory_map / self.memory_map.max()
+        abs_exploit_map = self.exploit_map.sum()
+        new_exploit_map = self.memory_map / self.memory_map.max()
+        if (0 >= abs_exploit_map) or (abs_exploit_map > new_exploit_map.sum()):
+            self.exploit_map = new_exploit_map
 
     def wipe_exploit_map(self) -> None:
         """Wipe the exploit map.
@@ -287,6 +290,7 @@ class Roboid:
         """
 
         # Setup
+        self.reset_pos()
         self.wipe_walk_map()
         iteration_stop = (self.mapshape[0] * self.mapshape[1])
 
@@ -318,5 +322,4 @@ class Roboid:
         print('Arrived at the target position')
         self.wipe_memory_map()
         self.wipe_exploit_map()
-        self.reset_pos()
         return self.walk_map
