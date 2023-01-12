@@ -90,5 +90,5 @@ class Presenter:
         distance = self.model.get_steps()
         optimal = self.model.calc_manhattan_distance() + 1
         f_rel = abs(distance - optimal) / optimal
-        metrics = f'Distance walked: {distance}; Optimal: {optimal}; F_rel: {f_rel * 100} %'
+        metrics = f'Distance walked: {distance}; Optimal: {optimal}; F_rel: {f_rel * 100:.2f} %'
         self.view.show_map(show_map, 'heatmap', metrics)
