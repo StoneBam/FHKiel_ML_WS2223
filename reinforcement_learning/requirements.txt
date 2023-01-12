@@ -2,3 +2,4 @@ numpy
 scipy
 seaborn
 pillow
+dearpygui
