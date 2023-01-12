@@ -6,14 +6,15 @@ import numpy as np
 
 class Roboid:
 
-    def __init__(self, mapshape: tuple[int, int], pos_start: tuple[int, int], pos_target: tuple[int, int]) -> None:
+    def __init__(self, mapshape: tuple[int, int], pos_start: tuple[int, int] = None, pos_target: tuple[int, int] = None) -> None:
+        self.mapshape = mapshape
+        self.pos_start = pos_start if pos_start is not None else self.set_random_start()
+        self.pos_target = pos_target if pos_target is not None else self.set_random_target()
         self.position = pos_start
-        self.pos_start = pos_start
-        self.pos_target = pos_target
+
         self.steps = 0
         self.num_explorations = 0
 
-        self.mapshape = mapshape
         self.exploit_map = np.zeros(mapshape, dtype=np.float64)
         self.memory_map = np.zeros(mapshape, dtype=np.float64)
         self.walk_map = np.zeros(mapshape, dtype=np.float64)
@@ -35,6 +36,42 @@ class Roboid:
         self.steps += 1
         self.memory_map[position] = self.steps
         return position
+
+    def set_random_start(self) -> None:
+        """Set a random start position.
+
+        Returns:
+            None
+        """
+        pos_start = (
+            random.choice([i for i in range(1, self.mapshape[0] - 1)]),
+            random.choice([i for i in range(1, self.mapshape[1] - 1)])
+        )
+        self.set_start(pos_start)
+        return pos_start
+
+    def set_random_target(self) -> None:
+        """Set a random target position.
+
+        Returns:
+            None
+        """
+        # Make sure that the target position is not the same as the start position
+        pos_target = (
+            random.choice([i for i in range(1, self.mapshape[0] - 1) if self.pos_start[0] != i]),
+            random.choice([i for i in range(1, self.mapshape[1] - 1) if self.pos_start[1] != i])
+        )
+        self.set_target(pos_target)
+        return pos_target
+
+    def set_random_start_and_target(self) -> None:
+        """Set a random start and target position.
+
+        Returns:
+            None
+        """
+        self.set_random_start()
+        self.set_random_target()
 
     def get_position(self) -> tuple[int, int]:
         """Get the current position.
@@ -167,6 +204,22 @@ class Roboid:
             bool: True if the given position is forbidden
         """
         return pos_value < 0
+
+    def check_start_and_target(self, pos_check: Callable[[tuple[int, int]], float]) -> None:
+        """Check if the start and target positions are valid.
+
+        Args:
+            pos_check (Callable[[tuple[int, int]], float]): function to check the position
+
+        Returns:
+            None
+        """
+        if self.is_forbidden(pos_check(self.pos_start)):
+            self.set_random_start()
+            return self.check_start_and_target(pos_check)
+        if self.is_forbidden(pos_check(self.pos_target)):
+            self.set_random_target()
+            return self.check_start_and_target(pos_check)
 
     # Actions positions
 
