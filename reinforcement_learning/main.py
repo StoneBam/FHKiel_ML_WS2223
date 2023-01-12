@@ -19,16 +19,18 @@ def sanity_check_args(args: argparse.Namespace) -> None:
         raise ValueError("Map size must be greater than 0")
 
     # Check the start position
-    if args.start[0] < 0 or args.start[1] < 0:
-        raise ValueError("Start position must be greater than 0")
-    if args.start[0] >= args.mapsize[0] or args.start[1] >= args.mapsize[1]:
-        raise ValueError("Start position must be inside the map")
+    if args.start is not None:
+        if args.start[0] < 0 or args.start[1] < 0:
+            raise ValueError("Start position must be greater than 0")
+        if args.start[0] >= args.mapsize[0] or args.start[1] >= args.mapsize[1]:
+            raise ValueError("Start position must be inside the map")
 
     # Check the target position
-    if args.target[0] < 0 or args.target[1] < 0:
-        raise ValueError("Target position must be greater than 0")
-    if args.target[0] >= args.mapsize[0] or args.target[1] >= args.mapsize[1]:
-        raise ValueError("Target position must be inside the map")
+    if args.target is not None:
+        if args.target[0] < 0 or args.target[1] < 0:
+            raise ValueError("Target position must be greater than 0")
+        if args.target[0] >= args.mapsize[0] or args.target[1] >= args.mapsize[1]:
+            raise ValueError("Target position must be inside the map")
 
     # Check the number of explorations
     if args.explorations <= 0:
@@ -38,8 +40,8 @@ def sanity_check_args(args: argparse.Namespace) -> None:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--mapsize', type=int, nargs=2, default=(20, 20))
-    parser.add_argument('-s', '--start', type=int, nargs=2, default=(18, 18))
-    parser.add_argument('-t', '--target', type=int, nargs=2, default=(2, 2))
+    parser.add_argument('-s', '--start', type=int, nargs=2)
+    parser.add_argument('-t', '--target', type=int, nargs=2)
     parser.add_argument('-e', '--explorations', type=int, default=20)
     args = parser.parse_args()
 
