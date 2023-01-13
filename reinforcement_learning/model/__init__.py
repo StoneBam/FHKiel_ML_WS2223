@@ -433,7 +433,10 @@ class Roboid:
         Returns:
             tuple[int, int]: chosen position
         """
-        return random.choice(list(self.adjacent_pos))
+        random_pos = random.choice(list(self.adjacent_pos))
+        if self.is_forbidden(self.pos_check(random_pos)):
+            return self.choose_adjacent_pos()
+        return random_pos
 
     def reset_pos(self) -> None:
         """Reset the current position to the start position.

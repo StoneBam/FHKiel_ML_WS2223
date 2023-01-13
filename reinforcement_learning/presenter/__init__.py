@@ -146,6 +146,8 @@ class Presenter:
         self.view.load_map_from_image('reinforcement_learning/view/testmap.png')
         start = self.model.start[::-1]
         target = self.model.target[::-1]
+        optimal = self.model.calc_manhattan_distance() + 1
+        print(f'Start: {start}; Target: {target}; Optimal: {optimal}')
 
         training_results = []
         best_training_rep = 0
@@ -167,7 +169,7 @@ class Presenter:
         average_f_rel = sum(training_results) / len(training_results)
         standard_deviation = np.std(training_results)
         inv_training_results = [max(training_results) - f_rel for f_rel in training_results]
-        title = f'Best f_rel: {best_f_rel * 100:.2f}% in Rep: {best_training_rep}; S: {start}; T: {target}'
+        title = f'Best f_rel: {best_f_rel * 100:.2f}% in Rep: {best_training_rep}; S: {start}; T: {target}, D: {optimal}'
         self.view.show_map(best_map, 'heatmap', title, start, target)
 
         fig, ax = plt.subplots()
