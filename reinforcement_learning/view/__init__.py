@@ -11,18 +11,49 @@ from scipy import ndimage
 class Environment:
 
     def __init__(self, mapsize: tuple[int, int] = (10, 10)) -> None:
-        self.mapsize = mapsize
-
-        self.info_layers: dict[str, Callable] = {
+        self._info_layers: dict[str, Callable] = {
             'heatmap': self.heatmap,
             'contourmap': self.contourmap
         }
-
+        self.mapsize = mapsize
         self.map = self.create_empty_map(borders=True)
 
-    # Setters and getters
+    @property
+    def mapsize(self) -> tuple[int, int]:
+        """Get the map size.
 
-    def set_map(self, _map: np.ndarray) -> None:
+        Returns:
+            tuple[int, int]: map size
+        """
+        return self._mapsize
+
+    @mapsize.setter
+    def mapsize(self, _mapsize: tuple[int, int]) -> None:
+        """Set the map size.
+
+        Args:
+            _mapsize (tuple[int, int]): map size to be set
+
+        Returns:
+            None
+        """
+        if _mapsize[0] < 0 and _mapsize[1] < 0:
+            raise ValueError('Map size must be positive.')
+        if _mapsize[0] < 4 or _mapsize[1] < 4:
+            raise ValueError('Map size must be at least 4x4.')
+        self._mapsize = _mapsize
+
+    @property
+    def map(self) -> np.ndarray:
+        """Get the map.
+
+        Returns:
+            np.ndarray: map
+        """
+        return self._map
+
+    @map.setter
+    def map(self, _map: np.ndarray) -> None:
         """Set the map.
 
         Args:
@@ -31,15 +62,18 @@ class Environment:
         Returns:
             None
         """
-        self.map = _map
+        if _map.shape != self.mapsize:
+            raise ValueError('Map size does not match.')
+        self._map = _map
 
-    def get_map(self) -> np.ndarray:
-        """Get the map.
+    @property
+    def info_layers(self) -> dict[str, Callable]:
+        """Get the info layers.
 
         Returns:
-            np.ndarray: map
+            dict[str, Callable]: info layers
         """
-        return self.map
+        return self._info_layers
 
     # Map creation methods
 
@@ -104,7 +138,7 @@ class Environment:
         image[threshold] = -1
         if borders:
             image = self.place_borders(image)
-        self.set_map(image)
+        self.map = image
         return image
 
     def save_map_to_image(self, image_path: str) -> None:
@@ -116,9 +150,10 @@ class Environment:
         Returns:
             None
         """
-        threshold = 0 > self.map
-        self.map[threshold] = 0
-        image = Image.fromarray(np.uint8(self.map * 255))
+        _map = self.map.copy()
+        threshold = 0 > _map
+        _map[threshold] = 0
+        image = Image.fromarray(np.uint8(_map * 255))
         image.save(image_path, bitmap_format="PNG")
 
     # Map visualization methods
