@@ -43,15 +43,17 @@ def main():
     parser.add_argument('-s', '--start', type=int, nargs=2)
     parser.add_argument('-t', '--target', type=int, nargs=2)
     parser.add_argument('-e', '--explorations', type=int, default=20)
+    parser.add_argument('-r', '--repeat', type=int, default=1)
+    parser.add_argument('-i', '--intermediate', action='store_true', default=False)
     args = parser.parse_args()
 
     # Sanity check the arguments
     sanity_check_args(args)
 
     # Arguments
-    mapshape = args.mapsize
-    pos_start = args.start
-    pos_target = args.target
+    mapshape = tuple(args.mapsize)
+    pos_start = tuple(args.start) if args.start is not None else None
+    pos_target = tuple(args.target) if args.target is not None else None
 
     # Create model, view and presenter
     model = Roboid(mapshape, pos_start, pos_target)
@@ -59,7 +61,7 @@ def main():
     presenter = Presenter(model, view)
 
     # Run the application
-    presenter.run(args.explorations)
+    presenter.run(args.explorations, args.repeat, args.intermediate)
 
 
 if __name__ == "__main__":
