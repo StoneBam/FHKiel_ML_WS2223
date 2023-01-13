@@ -157,6 +157,31 @@ class Environment:
 
     # Map display methods
 
+    def maximize_window(self) -> None:
+        """Maximize the window depending on the backend.
+
+        Returns:
+            None
+        """
+        mng = plt.get_current_fig_manager()
+        match plt.get_backend():
+            case "TkAgg":
+                mng.window.state("zoomed")
+            case "Qt4Agg":
+                mng.window.showMaximized()
+            case "Qt5Agg":
+                mng.window.showMaximized()
+            case "MacOSX":
+                mng.window.showMaximized()
+            case "WXAgg":
+                mng.frame.Maximize(True)
+            case "GTKAgg":
+                mng.window.maximize()
+            case "GTK3Agg":
+                mng.window.maximize()
+            case _:
+                pass
+
     def show_map(self, _map, _map_key: str, title: str = '') -> None:
         """Show a single map with a specific visualization method.
 
@@ -171,8 +196,7 @@ class Environment:
         self.info_layers.get(_map_key, self.heatmap)(_map, ax)
         plt.title(title)
         plt.tight_layout()
-        mng = plt.get_current_fig_manager()
-        mng.window.state("zoomed")
+        self.maximize_window()
         plt.show()
 
     def show_all_maps(self, _map: np.ndarray, title: str = '') -> None:
@@ -189,8 +213,7 @@ class Environment:
         self.contourmap(_map, axes[1])
         plt.title(title)
         plt.tight_layout()
-        mng = plt.get_current_fig_manager()
-        mng.window.state("zoomed")
+        self.maximize_window()
         plt.show()
 
 
