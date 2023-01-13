@@ -105,7 +105,7 @@ class Presenter:
         optimal = self.model.calc_manhattan_distance() + 1
         explorations = self.model.num_explorations
         metrics = f'Explorations: {explorations}; Steps: {distance}; Optimal: {optimal}; S: {start}; T: {target}'
-        self.view.show_map(show_map, 'heatmap', metrics)
+        self.view.show_map(show_map, 'heatmap', metrics, start, target)
 
         walk_map = self.model.exploit()
         threshhold = walk_map >= 1
@@ -115,4 +115,4 @@ class Presenter:
         optimal = self.model.calc_manhattan_distance() + 1
         f_rel = abs(distance - optimal) / optimal
         metrics = f'Distance walked: {distance}; Optimal: {optimal}; F_rel: {f_rel * 100:.2f}%; S: {start}; T: {target}'
-        self.view.show_map(show_map, 'heatmap', metrics)
+        self.view.show_map(show_map, 'heatmap', metrics, start, target)
