@@ -5,10 +5,20 @@ import numpy as np
 
 class View(Protocol):
 
-    def get_map(self) -> np.ndarray:
+    @property
+    def mapsize(self) -> tuple[int, int]:
         ...
 
-    def set_map(self, _map: np.ndarray) -> None:
+    @mapsize.setter
+    def mapsize(self, _mapsize: tuple[int, int]) -> None:
+        ...
+
+    @property
+    def map(self) -> np.ndarray:
+        ...
+
+    @map.setter
+    def map(self, _map: np.ndarray) -> None:
         ...
 
     def show_map(self, _map, _map_key: str, title: str) -> None:
@@ -65,7 +75,7 @@ class Presenter:
         Returns:
             dict[str, tuple[int, int]]: adjacent positions
         """
-        return {pos: self.view.get_map()[pos] for pos in positions}
+        return {pos: self.view.map[pos] for pos in positions}
 
     def pos_value(self, pos: tuple[int, int]) -> int:
         """Get the value of the current position.
@@ -76,7 +86,7 @@ class Presenter:
         Returns:
             int: value of the current position
         """
-        return self.view.get_map()[pos]
+        return self.view.map[pos]
 
     def run(self, explorations: int = 1) -> None:
         print('Running presenter...')
@@ -86,7 +96,7 @@ class Presenter:
 
         print('Starting exploration...')
         exploit_map = self.model.explore(self.adjacent_pos, explorations)
-        show_map = self.view.get_map() + exploit_map
+        show_map = self.view.map + exploit_map
         distance = self.model.get_steps()
         optimal = self.model.calc_manhattan_distance() + 1
         explorations = self.model.get_explorations()
@@ -96,7 +106,7 @@ class Presenter:
         walk_map = self.model.exploit()
         threshhold = walk_map >= 1
         walk_map[threshhold] = 1
-        show_map = self.view.get_map() + walk_map
+        show_map = self.view.map + walk_map
         distance = self.model.get_steps()
         optimal = self.model.calc_manhattan_distance() + 1
         f_rel = abs(distance - optimal) / optimal
