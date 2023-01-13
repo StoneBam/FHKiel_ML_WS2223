@@ -220,29 +220,31 @@ class Environment:
 def main() -> None:
     # Parse command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--mapsize', type=int, nargs=2, default=(10, 10))
-    parser.add_argument('-d', '--display', type=str, default='heatmap')
-    parser.add_argument('-l', '--load', type=str, default='testmap.png')
-    parser.add_argument('-s', '--save', type=str, default=None)
-    parser.add_argument('-b', '--no-borders', action='store_false', dest='borders')
+    parser.add_argument('-m', '--mapsize', type=int, nargs=2, default=(10, 10), help='Map size (width, height)')
+    parser.add_argument('-d', '--display', type=str, default='heatmap', help='Map display method')
+    parser.add_argument('-l', '--load', type=str, help='Load map from image')
+    parser.add_argument('-r', '--random', action='store_true', help='Create random map')
+    parser.add_argument('-s', '--save', type=str, default=None, help='Save map to image')
+    parser.add_argument('-b', '--no-borders', action='store_false', dest='borders', help='Remove borders from map')
     args = parser.parse_args()
 
     # Create environment
     env = Environment(args.mapsize)
 
-    # Random maps
-    empty_map_no_borders = env.create_empty_map(borders=False)
-    env.show_map(empty_map_no_borders, args.display)
-    empty_map = env.create_empty_map(borders=True)
-    env.show_map(empty_map, args.display)
-    rng_map = env.create_random_map()
-    env.show_map(rng_map, args.display)
-    env.show_all_maps(rng_map)
-
-    # Maps from images
-    if args.load:
+    if args.random:
+        rng_map = env.create_random_map(args.borders)
+        env.show_map(rng_map, args.display, "Random map")
+        env.show_all_maps(rng_map)
+    elif args.load:
         img_map = env.load_map_from_image(args.load, borders=args.borders)
-        env.show_map(img_map, args.display)
+        env.show_map(img_map, args.display, "Image map")
+    else:
+        empty_map = env.create_empty_map(args.borders)
+        env.show_map(empty_map, args.display, "Empty map")
+
+    # Save maps to images
+    if args.save:
+        env.save_map_to_image(args.save)
 
 
 if __name__ == "__main__":
