@@ -26,6 +26,28 @@ class Roboid:
         self.walk_map = np.zeros(mapshape, dtype=np.float64)
 
         self.adjacent_pos = {}
+        self.pos_check = None
+
+    @property
+    def pos_check(self) -> Callable[[tuple[int, int]], float]:
+        """Get the position check function.
+
+        Returns:
+            Callable[[tuple[int, int]], float]: position check function
+        """
+        return self._pos_check
+
+    @pos_check.setter
+    def pos_check(self, pos_check: Callable[[tuple[int, int]], float]) -> None:
+        """Set the position check function.
+
+        Args:
+            pos_check (Callable[[tuple[int, int]], float]): position check function
+
+        Returns:
+            None
+        """
+        self._pos_check = pos_check
 
     @property
     def mapshape(self) -> tuple[int, int]:
@@ -205,6 +227,7 @@ class Roboid:
             random.choice([i for i in range(1, self.mapshape[1] - 1)])
         )
         self.start = start
+        self.position = start
 
     def set_random_target(self) -> None:
         """Set a random target position.
@@ -319,7 +342,18 @@ class Roboid:
         """
         return pos_value < 0
 
-    def check_start_and_target(self, pos_check: Callable[[tuple[int, int]], float]) -> None:
+    def is_curr_pos_valid(self) -> None:
+        """Check if the current position is valid.
+
+        Returns:
+            None
+        """
+        if self.pos_check is None:
+            raise ValueError("pos_check must be defined.")
+        if self.is_forbidden(self.pos_check(self.position)):
+            raise ValueError("Current position is forbidden.")
+
+    def check_start_and_target(self) -> None:
         """Check if the start and target positions are valid.
 
         Args:
@@ -328,12 +362,14 @@ class Roboid:
         Returns:
             None
         """
-        if self.is_forbidden(pos_check(self.start)):
+        if self.pos_check is None:
+            raise ValueError("pos_check must be defined.")
+        if self.is_forbidden(self.pos_check(self.start)):
             self.set_random_start()
-            return self.check_start_and_target(pos_check)
-        if self.is_forbidden(pos_check(self.target)):
+            return self.check_start_and_target()
+        if self.is_forbidden(self.pos_check(self.target)):
             self.set_random_target()
-            return self.check_start_and_target(pos_check)
+            return self.check_start_and_target()
 
     def check_pos_is_valid(self, pos: tuple[int, int]) -> None:
         """Check if the given position is valid.

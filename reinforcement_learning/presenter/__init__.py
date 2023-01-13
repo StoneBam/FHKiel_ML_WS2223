@@ -59,7 +59,12 @@ class Model(Protocol):
     def target(self) -> tuple[int, int]:
         ...
 
-    def check_start_and_target(self, pos_check: Callable[[tuple[int, int]], float]) -> None:
+    @property
+    def pos_check(self) -> Callable[[tuple[int, int]], float]:
+        ...
+
+    @pos_check.setter
+    def pos_check(self, pos_check: Callable[[tuple[int, int]], float]) -> None:
         ...
 
 
@@ -69,7 +74,7 @@ class Presenter:
         self.model = model
         self.view = view
 
-        self.model.check_start_and_target(self.pos_value)
+        self.model.pos_check = self.pos_value
 
     def adjacent_pos(self, positions: list[tuple[int, int]]) -> dict[tuple[int, int], int]:
         """Get adjacent positions.
@@ -161,7 +166,7 @@ class Presenter:
         print(f'Best f_rel: {best_f_rel * 100:.2f}%')
         average_f_rel = sum(training_results) / len(training_results)
         standard_deviation = np.std(training_results)
-        inv_training_results = [1 - f_rel for f_rel in training_results]
+        inv_training_results = [max(training_results) - f_rel for f_rel in training_results]
         title = f'Best f_rel: {best_f_rel * 100:.2f}% in Rep: {best_training_rep}; S: {start}; T: {target}'
         self.view.show_map(best_map, 'heatmap', title, start, target)
 
@@ -173,7 +178,7 @@ class Presenter:
         if len(training_results) < 20:
             ax.bar_label(rects_bad, fmt='%.2f')
         ax.set_xlim(0, len(training_results) + 1)
-        ax.set_ylim(0, 1)
+        ax.set_ylim(0, max(training_results))
         ax.set_title(f'Training results; Start: {start}; Target: {target}; Avg: {average_f_rel:.2f} +- {standard_deviation:.2f}')
         ax.set_xlabel('Repetition')
         ax.set_ylabel('f_rel')
