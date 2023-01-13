@@ -239,12 +239,13 @@ class Environment:
         self.info_layers.get(_map_key, self.heatmap)(_map, ax)
         if start is not None:
             start = tuple((x + 0.5 for x in start))
-            ax.add_patch(Circle(start, 0.5, color='b', fill=False, clip_on=False))
+            ax.add_patch(Circle(start, 0.5, color='b', fill=False, clip_on=False, label='Start'))
         if target is not None:
             target = tuple((x + 0.5 for x in target))
-            ax.add_patch(Circle(target, 0.5, color='k', fill=False, clip_on=False))
+            ax.add_patch(Circle(target, 0.5, color='k', fill=False, clip_on=False, label='Target'))
         plt.title(title)
         plt.tight_layout()
+        plt.legend()
         self.maximize_window()
         plt.show()
 
