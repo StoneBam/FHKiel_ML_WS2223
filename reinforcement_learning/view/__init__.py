@@ -4,6 +4,7 @@ from typing import Callable
 import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
+from matplotlib.patches import Circle
 from PIL import Image
 from scipy import ndimage
 
@@ -217,7 +218,14 @@ class Environment:
             case _:
                 pass
 
-    def show_map(self, _map, _map_key: str, title: str = '') -> None:
+    def show_map(
+            self,
+            _map: np.ndarray,
+            _map_key: str,
+            title: str = '',
+            start: tuple[int, int] = None,
+            target: tuple[int, int] = None
+            ) -> None:
         """Show a single map with a specific visualization method.
 
         Args:
@@ -229,12 +237,24 @@ class Environment:
         """
         _, ax = plt.subplots(1, 1, subplot_kw={'aspect': 'equal'})
         self.info_layers.get(_map_key, self.heatmap)(_map, ax)
+        if start is not None:
+            start = tuple((x + 0.5 for x in start))
+            ax.add_patch(Circle(start, 0.5, color='b', fill=False, clip_on=False))
+        if target is not None:
+            target = tuple((x + 0.5 for x in target))
+            ax.add_patch(Circle(target, 0.5, color='k', fill=False, clip_on=False))
         plt.title(title)
         plt.tight_layout()
         self.maximize_window()
         plt.show()
 
-    def show_all_maps(self, _map: np.ndarray, title: str = '') -> None:
+    def show_all_maps(
+            self,
+            _map: np.ndarray,
+            title: str = '',
+            start: tuple[int, int] = None,
+            target: tuple[int, int] = None
+            ) -> None:
         """Show all maps with all visualization methods.
 
         Args:
@@ -244,7 +264,7 @@ class Environment:
             None
         """
         _, axes = plt.subplots(1, 2, subplot_kw={'aspect': 'equal'})
-        self.heatmap(_map, axes[0], False)
+        self.heatmap(_map, axes[0], False, start, target)
         self.contourmap(_map, axes[1])
         plt.title(title)
         plt.tight_layout()

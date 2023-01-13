@@ -524,6 +524,8 @@ class Roboid:
         # Main loop
         print('Start exploiting the map')
         while not self.is_target():
+            self.steps += 1
+            self.memory_map[self.position] = self.steps
             self.walk_map[self.position] = self.steps
             adjacent_pos = self.calc_adjacent_pos_list()
             exploit_value = 0
@@ -543,10 +545,10 @@ class Roboid:
                 break
 
             self.position = exploit_pos
-            self.steps += 1
-            self.memory_map[self.position] = self.steps
 
         # Wrap up
+        self.steps += 1
+        self.memory_map[self.position] = self.steps
         self.walk_map[self.position] = self.steps
         print('Arrived at the target position')
         self.wipe_memory_map()
