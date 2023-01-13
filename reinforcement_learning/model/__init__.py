@@ -6,14 +6,20 @@ import numpy as np
 
 class Roboid:
 
-    def __init__(self, mapshape: tuple[int, int], pos_start: tuple[int, int] = None, pos_target: tuple[int, int] = None) -> None:
+    def __init__(self, mapshape: tuple[int, int], start: tuple[int, int] = None, target: tuple[int, int] = None) -> None:
         self.mapshape = mapshape
-        self.pos_start = pos_start if pos_start is not None else self.set_random_start()
-        self.pos_target = pos_target if pos_target is not None else self.set_random_target()
-        self.position = pos_start
+        if start is not None:
+            self.start = start
+        else:
+            self.set_random_start()
+        if target is not None:
+            self.target = target
+        else:
+            self.set_random_target()
+        self.position = self.start
 
-        self.steps = 0
-        self.num_explorations = 0
+        self._steps = 0
+        self._num_explorations = 0
 
         self.exploit_map = np.zeros(mapshape, dtype=np.float64)
         self.memory_map = np.zeros(mapshape, dtype=np.float64)
@@ -21,21 +27,172 @@ class Roboid:
 
         self.adjacent_pos = {}
 
-    # Getters and setters position
+    @property
+    def mapshape(self) -> tuple[int, int]:
+        """Get the map shape.
 
-    def set_position(self, position: tuple[int, int]) -> tuple[int, int]:
+        Returns:
+            tuple[int, int]: map shape
+        """
+        return self._mapshape
+
+    @mapshape.setter
+    def mapshape(self, mapshape: tuple[int, int]) -> None:
+        """Set the map shape.
+
+        Args:
+            mapshape (tuple[int, int]): map shape
+
+        Returns:
+            None
+        """
+        if mapshape[0] < 0 or mapshape[1] < 0:
+            raise ValueError("Map shape must be positive.")
+        if mapshape[0] < 4 or mapshape[1] < 4:
+            raise ValueError("Map shape must be at least 4x4.")
+        self._mapshape = mapshape
+
+    @property
+    def position(self) -> tuple[int, int]:
+        """Get the current position.
+
+        Returns:
+            tuple[int, int]: current position
+        """
+        return self._position
+
+    @position.setter
+    def position(self, position: tuple[int, int]) -> None:
         """Set the current position.
 
         Args:
             position (tuple[int, int]): current position
 
         Returns:
-            tuple[int, int]: new position
+            None
         """
-        self.position = position
-        self.steps += 1
-        self.memory_map[position] = self.steps
-        return position
+        self.check_pos_is_valid(position)
+        self._position = position
+
+    @property
+    def start(self) -> tuple[int, int]:
+        """Get the start position.
+
+        Returns:
+            tuple[int, int]: start position
+        """
+        return self._start
+
+    @start.setter
+    def start(self, start: tuple[int, int]) -> None:
+        """Set the start position.
+
+        Args:
+            start (tuple[int, int]): start position
+
+        Returns:
+            None
+        """
+        self.check_pos_is_valid(start)
+        self._start = start
+
+    @property
+    def target(self) -> tuple[int, int]:
+        """Get the target position.
+
+        Returns:
+            tuple[int, int]: target position
+        """
+        return self._target
+
+    @target.setter
+    def target(self, target: tuple[int, int]) -> None:
+        """Set the target position.
+
+        Args:
+            target (tuple[int, int]): target position
+
+        Returns:
+            None
+        """
+        self.check_pos_is_valid(target)
+        self._target = target
+
+    @property
+    def adjacent_pos(self) -> dict[tuple[int, int]: float]:
+        """Get the adjacent positions.
+
+        Returns:
+            dict[tuple[int, int]: float]: adjacent positions
+        """
+        return self._adjacent_pos
+
+    @adjacent_pos.setter
+    def adjacent_pos(self, adjacent_pos: dict[tuple[int, int]: float]) -> None:
+        """Set the adjacent positions.
+
+        Args:
+            adjacent_pos (dict[tuple[int, int]: float]): adjacent positions
+
+        Returns:
+            None
+        """
+        ret = {}
+        for position in adjacent_pos:
+            if not self.is_forbidden(adjacent_pos[position]):
+                ret[position] = adjacent_pos[position]
+        if ret == {}:
+            print("No adjacent position is available, staying at the same position")
+            ret = {self.position: 0}
+        self._adjacent_pos = ret
+
+    @property
+    def steps(self) -> int:
+        """Get the number of steps.
+
+        Returns:
+            int: number of steps
+        """
+        return self._steps
+
+    @steps.setter
+    def steps(self, steps: int) -> None:
+        """Set the number of steps.
+
+        Args:
+            steps (int): number of steps
+
+        Returns:
+            None
+        """
+        if steps < 0:
+            raise ValueError("Number of steps must be positive.")
+        self._steps = steps
+
+    @property
+    def num_explorations(self) -> int:
+        """Get the number of explorations.
+
+        Returns:
+            int: number of explorations
+        """
+        return self._num_explorations
+
+    @num_explorations.setter
+    def num_explorations(self, num_explorations: int) -> None:
+        """Set the number of explorations.
+
+        Args:
+            num_explorations (int): number of explorations
+
+        Returns:
+            None
+        """
+        if num_explorations < 0:
+            raise ValueError("Number of explorations must be positive.")
+        self._num_explorations = num_explorations
+
+    # Random start and target
 
     def set_random_start(self) -> None:
         """Set a random start position.
@@ -43,12 +200,11 @@ class Roboid:
         Returns:
             None
         """
-        pos_start = (
+        start = (
             random.choice([i for i in range(1, self.mapshape[0] - 1)]),
             random.choice([i for i in range(1, self.mapshape[1] - 1)])
         )
-        self.set_start(pos_start)
-        return pos_start
+        self.start = start
 
     def set_random_target(self) -> None:
         """Set a random target position.
@@ -57,12 +213,11 @@ class Roboid:
             None
         """
         # Make sure that the target position is not the same as the start position
-        pos_target = (
-            random.choice([i for i in range(1, self.mapshape[0] - 1) if self.pos_start[0] != i]),
-            random.choice([i for i in range(1, self.mapshape[1] - 1) if self.pos_start[1] != i])
+        target = (
+            random.choice([i for i in range(1, self.mapshape[0] - 1) if self.start[0] != i]),
+            random.choice([i for i in range(1, self.mapshape[1] - 1) if self.start[1] != i])
         )
-        self.set_target(pos_target)
-        return pos_target
+        self.target = target
 
     def set_random_start_and_target(self) -> None:
         """Set a random start and target position.
@@ -73,111 +228,73 @@ class Roboid:
         self.set_random_start()
         self.set_random_target()
 
-    def get_position(self) -> tuple[int, int]:
-        """Get the current position.
-
-        Returns:
-            tuple[int, int]: current position
-        """
-        return self.position
-
-    def set_start(self, position: tuple[int, int]) -> None:
-        """Set the start position.
-
-        Args:
-            position (tuple[int, int]): start position
-
-        Returns:
-            None
-        """
-        self.pos_start = position
-
-    def get_start(self) -> tuple[int, int]:
-        """Get the start position.
-
-        Returns:
-            tuple[int, int]: start position
-        """
-        return self.pos_start
-
-    def set_target(self, position: tuple[int, int]) -> None:
-        """Set the target position.
-
-        Args:
-            position (tuple[int, int]): target position
-
-        Returns:
-            None
-        """
-        self.pos_target = position
-
-    def get_target(self) -> tuple[int, int]:
-        """Get the target position.
-
-        Returns:
-            tuple[int, int]: target position
-        """
-        return self.pos_target
-
-    def set_adjacent_pos(self, positions: dict[tuple[int, int]: float]) -> None:
-        """Set the adjacent positions.
-
-        Args:
-            positions (dict[tuple[int, int]: float]): adjacent positions
-
-        Returns:
-            None
-        """
-        ret = {}
-        for position in positions:
-            if not self.is_forbidden(positions[position]):
-                ret[position] = positions[position]
-        if ret == {}:
-            print("No adjacent position is available, staying at the same position")
-            ret = {self.position: 0}
-        self.adjacent_pos = ret
-
-    def get_adjacent_pos(self) -> dict[tuple[int, int]: float]:
-        """Get the adjacent positions.
-
-        Returns:
-            list[tuple[int, int]]: adjacent positions
-        """
-        return self.adjacent_pos
-
     # Getters and setters maps
 
-    def get_memory_map(self) -> np.ndarray:
+    @property
+    def memory_map(self) -> np.ndarray:
         """Get the memory map.
 
         Returns:
             np.ndarray: memory map
         """
-        return self.memory_map
+        return self._memory_map
 
-    def get_exploit_map(self) -> np.ndarray:
+    @memory_map.setter
+    def memory_map(self, memory_map: np.ndarray) -> None:
+        """Set the memory map.
+
+        Args:
+            memory_map (np.ndarray): memory map
+
+        Returns:
+            None
+        """
+        self.check_map_is_valid(memory_map)
+        self._memory_map = memory_map
+
+    @property
+    def exploit_map(self) -> np.ndarray:
         """Get the exploit map.
 
         Returns:
             np.ndarray: exploit map
         """
-        return self.exploit_map
+        return self._exploit_map
 
-    def get_steps(self) -> int:
-        """Get the number of steps.
+    @exploit_map.setter
+    def exploit_map(self, exploit_map: np.ndarray) -> None:
+        """Set the exploit map.
 
-        Returns:
-            int: number of steps
-        """
-        return self.steps
-
-    def get_explorations(self) -> int:
-        """Get the number of explorations.
+        Args:
+            exploit_map (np.ndarray): exploit map
 
         Returns:
-            int: number of explorations
+            None
         """
-        return self.num_explorations
+        self.check_map_is_valid(exploit_map)
+        self._exploit_map = exploit_map
+
+    @property
+    def walk_map(self) -> np.ndarray:
+        """Get the walk map.
+
+        Returns:
+            np.ndarray: walk map
+        """
+        return self._walk_map
+
+    @walk_map.setter
+    def walk_map(self, walk_map: np.ndarray) -> None:
+        """Set the walk map.
+
+        Args:
+            walk_map (np.ndarray): walk map
+
+        Returns:
+            None
+        """
+        self.check_map_is_valid(walk_map)
+        self._walk_map = walk_map
 
     # Checks
 
@@ -188,11 +305,8 @@ class Roboid:
             bool: True if the current position is the target position
         """
         x, y = self.position
-        x_target, y_target = self.pos_target
-        ret = x == x_target and y == y_target
-        if ret:
-            return True
-        return False
+        x_target, y_target = self.target
+        return x == x_target and y == y_target
 
     def is_forbidden(self, pos_value: float) -> bool:
         """Check if the given position is forbidden.
@@ -214,12 +328,43 @@ class Roboid:
         Returns:
             None
         """
-        if self.is_forbidden(pos_check(self.pos_start)):
+        if self.is_forbidden(pos_check(self.start)):
             self.set_random_start()
             return self.check_start_and_target(pos_check)
-        if self.is_forbidden(pos_check(self.pos_target)):
+        if self.is_forbidden(pos_check(self.target)):
             self.set_random_target()
             return self.check_start_and_target(pos_check)
+
+    def check_pos_is_valid(self, pos: tuple[int, int]) -> None:
+        """Check if the given position is valid.
+
+        Args:
+            pos (tuple[int, int]): position to check
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: if the position is not valid
+        """
+        x, y = pos
+        if not (0 <= x < self.mapshape[0] and 0 <= y < self.mapshape[1]):
+            raise ValueError("Position is not valid.")
+
+    def check_map_is_valid(self, map: np.ndarray) -> None:
+        """Check if the given map is valid.
+
+        Args:
+            map (np.ndarray): map to check
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: if the map is not valid
+        """
+        if map.shape != self.mapshape:
+            raise ValueError("Map is not valid.")
 
     # Actions positions
 
@@ -242,8 +387,8 @@ class Roboid:
         Returns:
             float: Manhattan distance
         """
-        x, y = self.pos_start
-        x_target, y_target = self.pos_target
+        x, y = self.start
+        x_target, y_target = self.target
         return abs(x - x_target) + abs(y - y_target)
 
     def choose_adjacent_pos(self) -> tuple[int, int]:
@@ -261,7 +406,7 @@ class Roboid:
             None
         """
         self.steps = 0
-        self.set_position(self.pos_start)
+        self.position = self.start
 
     # Actions maps
 
@@ -325,13 +470,15 @@ class Roboid:
         # Setup
         self.wipe_memory_map()
         self.reset_pos()
-        iteration_stop = (self.mapshape[0] * self.mapshape[1]) ** 3
+        iteration_stop = (self.mapshape[0] * self.mapshape[1]) ** 2
 
         # Main loop
         while not self.is_target():
             adjacent_pos = self.calc_adjacent_pos_list()
-            self.set_adjacent_pos(adjacent_pos_func(adjacent_pos))
-            self.set_position(self.choose_adjacent_pos())
+            self.adjacent_pos = adjacent_pos_func(adjacent_pos)
+            self.position = self.choose_adjacent_pos()
+            self.steps += 1
+            self.memory_map[self.position] = self.steps
 
             if self.steps > iteration_stop:
                 # Stop exploration if too many iterations
@@ -395,7 +542,9 @@ class Roboid:
                 print("Too many iterations, stopping exploitation")
                 break
 
-            self.set_position(exploit_pos)
+            self.position = exploit_pos
+            self.steps += 1
+            self.memory_map[self.position] = self.steps
 
         # Wrap up
         self.walk_map[self.position] = self.steps

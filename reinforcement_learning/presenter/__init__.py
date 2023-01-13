@@ -42,16 +42,20 @@ class Model(Protocol):
     def calc_manhattan_distance(self) -> int:
         ...
 
-    def get_steps(self) -> int:
+    @property
+    def steps(self) -> int:
         ...
 
-    def get_explorations(self) -> int:
+    @property
+    def num_explorations(self) -> int:
         ...
 
-    def get_start(self) -> tuple[int, int]:
+    @property
+    def start(self) -> tuple[int, int]:
         ...
 
-    def get_target(self) -> tuple[int, int]:
+    @property
+    def target(self) -> tuple[int, int]:
         ...
 
     def check_start_and_target(self, pos_check: Callable[[tuple[int, int]], float]) -> None:
@@ -91,15 +95,15 @@ class Presenter:
     def run(self, explorations: int = 1) -> None:
         print('Running presenter...')
         self.view.load_map_from_image('reinforcement_learning/view/testmap.png')
-        start = self.model.get_start()[::-1]
-        target = self.model.get_target()[::-1]
+        start = self.model.start[::-1]
+        target = self.model.target[::-1]
 
         print('Starting exploration...')
         exploit_map = self.model.explore(self.adjacent_pos, explorations)
         show_map = self.view.map + exploit_map
-        distance = self.model.get_steps()
+        distance = self.model.steps
         optimal = self.model.calc_manhattan_distance() + 1
-        explorations = self.model.get_explorations()
+        explorations = self.model.num_explorations
         metrics = f'Explorations: {explorations}; Steps: {distance}; Optimal: {optimal}; S: {start}; T: {target}'
         self.view.show_map(show_map, 'heatmap', metrics)
 
@@ -107,7 +111,7 @@ class Presenter:
         threshhold = walk_map >= 1
         walk_map[threshhold] = 1
         show_map = self.view.map + walk_map
-        distance = self.model.get_steps()
+        distance = self.model.steps
         optimal = self.model.calc_manhattan_distance() + 1
         f_rel = abs(distance - optimal) / optimal
         metrics = f'Distance walked: {distance}; Optimal: {optimal}; F_rel: {f_rel * 100:.2f}%; S: {start}; T: {target}'
