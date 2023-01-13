@@ -2,3 +2,8 @@ numpy
 scipy
 seaborn
 pillow
+
+# for demo
+notebook
+nbconvert
+nbconvert[webpdf]

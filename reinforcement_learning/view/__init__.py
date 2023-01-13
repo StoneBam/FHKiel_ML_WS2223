@@ -208,6 +208,10 @@ def main() -> None:
     env = Environment(args.mapsize)
 
     # Random maps
+    empty_map_no_borders = env.create_empty_map(borders=False)
+    env.show_map(empty_map_no_borders, args.display)
+    empty_map = env.create_empty_map(borders=True)
+    env.show_map(empty_map, args.display)
     rng_map = env.create_random_map()
     env.show_map(rng_map, args.display)
     env.show_all_maps(rng_map)
