@@ -52,15 +52,14 @@ The roboid should have two modes (or a mix of both):
 
 ```mermaid
 graph TD
-    Start --> ChT
-    ChT{Target?} -- Yes --> Save
-    ChT -- No --> Rand[Random Choice]
-    Rand --> ChP{Passable?}
-    ChP -- No --> Rand
-    ChP -- Yes --> Move
-    Move --> Mem[Memorize]
-    Mem --> Count[Steps++]
-    Count --> ChT
+    Start["Start Explore"] --> ChT
+    ChT{On target?} -- Yes --> Save
+    ChT -- No --> Info["Get info of neighboring Tiles"] --> Rand[Random Choice]
+    Rand --> ChP{no-go-zone?}
+    ChP -- No --> Move
+    ChP -- Yes --> Rand
+    Move --> Count[Steps++] --> Mem[Memorize]
+    Mem --> ChT
     Save[Save memory] --> End
 ```
 
@@ -71,6 +70,18 @@ graph TD
   - Least amount of steps to target
   - Least amount of energy needed
   - Minimal steps with minimal energy
+
+```mermaid
+graph TD
+    Start["Start Exploit"] --> ChT
+    ChT{On target?} -- Yes --> Save
+    ChT -- No --> Info["Get info of neighboring Tiles"] --> Rand[Highest Value] -->
+    Bet{Already visited} --"No"--> Move
+    Bet --"Yes"--> Drop[Drop Tile] --> Info
+    Move --> Count[Steps++] --> Mem[Memorize]
+    Mem --> ChT
+    Save[Save memory] --> End
+```
 
 Basic roboid functions should work together with the python api for EV3dev.
 This will be solved over a protocol layer.
